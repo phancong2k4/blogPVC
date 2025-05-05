@@ -1,8 +1,13 @@
 ---
-title: Hệ Thống Phân Tán Là Gì?
-date: 2025-04-29
-description: Tổng quan hệ thống phân tán, các khái niệm và kiến trúc phổ biến
-category: hệ thống phân tán
+title: "Hệ thống phân tán"
+date: "2025-05-05"
+updated: "2025-05-05"
+categories:
+  - "sveltekit"
+  - "markdown"
+coverWidth: 16
+coverHeight: 9
+excerpt: Check out how heading links work with this starter in this post.
 ---
 
 > **Tác giả**: Phan Văn Công  

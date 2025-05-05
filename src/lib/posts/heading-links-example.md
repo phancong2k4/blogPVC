@@ -1,35 +1,77 @@
 ---
-title: "Automatic heading links in mdsvex"
-date: "2023-10-26"
-updated: "2023-10-26"
+title: "Tiến trình & Luồng"
+date: "2025-05-05"
+updated: "2025-05-05"
 categories:
   - "sveltekit"
   - "markdown"
 coverImage: "/images/Untitled1.png"
 coverWidth: 16
 coverHeight: 9
-excerpt: Check out how heading links work with this starter in this post.
+excerpt: tiến trình và luồng
 ---
 
-Here are some headings:
+Phan Văn Công - 22010158
 
-## Here's an h2
+## 1. Phân tích hiệu năng máy cá nhân
+**Thông tin máy:**
+![Ảnh](static/images/Untitled.png)
+- **CPU**: Không hiện rõ model trong ảnh, nhưng hệ thống đang dùng khoảng **11% CPU**.
+- **RAM**: Tổng dung lượng RAM gần **8 GB**, hiện đang dùng tới **87%** → khá cao.
+- **Ứng dụng nặng nhất**: Trình duyệt **Cốc Cốc** đang chiếm **gần 500 MB RAM** (20 tiến trình), tiếp theo là **Visual Studio Code** (~221 MB).
+- **GPU**: Không có ứng dụng nào đang sử dụng GPU đáng kể (0%).
+- **Power usage**: Hầu hết tiến trình đều ở mức **"Very low"**, chỉ có "System" là **"Low"**.
 
-Lorem ipsum dolor sit amet
+**Phân tích:**
 
-### This is an h3
+- RAM đang gần đầy (87%), có thể gây chậm khi chạy thêm ứng dụng nặng → **bộ nhớ là điểm nghẽn**.
+- CPU hoạt động nhẹ (11%), chưa bị quá tải.
+- GPU không được sử dụng hiệu quả trong các tác vụ hiện tại.
+- Trình duyệt Cốc Cốc chiếm nhiều tài nguyên (chạy nhiều tab hoặc tiến trình phụ).
+- Hệ thống hiện đang xử lý đa tiến trình khá nhiều (Cốc Cốc, Edge, Runtime Broker...), phù hợp với cấu hình đa luồng.
 
-Lorem ipsum dolor sit amet
+**Kết luận:**
 
-#### As you've probably guessed, this is an h4
+- Máy phù hợp để chạy các ứng dụng đa luồng nhẹ như lập trình, duyệt web nhẹ, làm việc văn phòng.
+- Không phù hợp chạy đa tiến trình nặng (như video render, AI training).
+- Nên nâng cấp RAM nếu thường xuyên dùng nhiều ứng dụng cùng lúc.
+---
+##  2. 12 bài toán CNTT sử dụng đa tiến trình hoặc đa luồng
 
-Lorem ipsum dolor sit amet
+| STT | Bài toán                              | Thread / Process |
+|-----|----------------------------------------|------------------|
+| 1   | Server web xử lý nhiều client cùng lúc | Thread           |
+| 2   | Chương trình chat thời gian thực       | Thread           |
+| 3   | Tải nhiều file cùng lúc (Download Manager) | Thread       |
+| 4   | Encode nhiều video song song           | Process          |
+| 5   | Phân tích log server (log analyzer)    | Process          |
+| 6   | Game online đa người chơi              | Thread           |
+| 7   | MapReduce xử lý dữ liệu lớn            | Process          |
+| 8   | Render đồ họa 3D                        | Thread           |
+| 9   | Đào coin (mining)                      | Process          |
+| 10  | Crawl dữ liệu từ web                   | Process          |
+| 11  | Huấn luyện AI / Deep Learning          | Cả hai           |
+| 12  | IDE biên dịch + kiểm tra lỗi realtime  | Thread           |
 
-##### This, of course, is an h5
+---
 
-Lorem ipsum dolor sit amet
+##  3. Bảng so sánh khi nào dùng Thread, khi nào dùng Process
+![Ảnh](static/images/anhbaitap55.jpg)
+---
 
-###### We're deep in h6 territory now
+##  4. Tìm hiểu cách ChatGPT huấn luyện bằng hệ thống phân tán
 
-Lorem ipsum dolor sit amet
+**Tóm tắt:**
 
+- **Dữ liệu huấn luyện**: hàng trăm tỷ từ (token).
+- **Data Parallelism**: chia dữ liệu ra nhiều phần, mỗi GPU xử lý một phần giống nhau.
+- **Model Parallelism**: chia mô hình lớn (GPT-3, GPT-4) ra các phần, mỗi GPU xử lý một tầng (layer).
+- Cần cụm hàng nghìn GPU → tốc độ nhanh và đảm bảo bộ nhớ đủ lớn.
+- **Hệ thống training**: sử dụng các supercomputer như V100, A100 GPU cluster (do Microsoft Azure cung cấp cho OpenAI).
+- Mỗi mô hình có hàng trăm tỷ tham số → nếu không dùng hệ thống phân tán thì không thể huấn luyện.
+
+**Tài liệu tham khảo:**
+
+- OpenAI Blog: [https://openai.com/research](https://openai.com/research)
+- Arxiv Paper GPT-3: [https://arxiv.org/abs/2005.14165](https://arxiv.org/abs/2005.14165)
+- Microsoft về hạ tầng cho OpenAI: [https://blogs.microsoft.com](https://blogs.microsoft.com)

@@ -13,7 +13,6 @@ excerpt: Check out how heading links work with this starter in this post.
 > **Tác giả**: Phan Văn Công  
 > **Ngày đăng**: 29/04/2025
 
-![Hệ thống phân tán](/static/images/anh1.png)
 
 ## 🧠 Hệ thống phân tán là gì?
 
@@ -72,20 +71,11 @@ Một số mô hình kiến trúc chính:
 5. **Event-driven Architecture**: Các thành phần giao tiếp qua sự kiện.
 6. **Service-Oriented Architecture (SOA)**.
 
-![Kiến trúc Microservices](/static/images/images.jpg)
+
 
 ---
 
 ## 📚 Tham khảo
-
-- [Wikipedia - Distributed Systems](https://en.wikipedia.org/wiki/Distributed_computing)
-- [Slide bài giảng môn Hệ thống phân tán]
-- [Tài liệu GitHub Markdown](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax)
-
----
-
-👉 Sau khi hoàn tất, bạn có thể **triển khai blog lên Vercel**, sau đó **gửi link blog lên Canvas (Bài tập 1)**.
-
 ---
 
 **Phan Văn Công**  

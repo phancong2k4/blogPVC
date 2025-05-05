@@ -7,7 +7,7 @@ categories:
   - "markdown"
 coverWidth: 16
 coverHeight: 9
-excerpt: Check out how heading links work with this starter in this post.
+excerpt: Hệ thống phân tán 
 ---
 
 > **Tác giả**: Phan Văn Công  

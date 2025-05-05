@@ -15,7 +15,7 @@ Phan Văn Công - 22010158
 
 ## 1. Phân tích hiệu năng máy cá nhân
 **Thông tin máy:**
-![Ảnh](static/images/Untitled.png)
+![Ảnh](/images/Untitled.png)
 - **CPU**: Không hiện rõ model trong ảnh, nhưng hệ thống đang dùng khoảng **11% CPU**.
 - **RAM**: Tổng dung lượng RAM gần **8 GB**, hiện đang dùng tới **87%** → khá cao.
 - **Ứng dụng nặng nhất**: Trình duyệt **Cốc Cốc** đang chiếm **gần 500 MB RAM** (20 tiến trình), tiếp theo là **Visual Studio Code** (~221 MB).
@@ -56,7 +56,7 @@ Phan Văn Công - 22010158
 ---
 
 ##  3. Bảng so sánh khi nào dùng Thread, khi nào dùng Process
-![Ảnh](static/images/anhbaitap55.jpg)
+![Ảnh](/images/anhbaitap55.jpg)
 ---
 
 ##  4. Tìm hiểu cách ChatGPT huấn luyện bằng hệ thống phân tán

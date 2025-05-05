@@ -15,13 +15,27 @@ Phan Văn Công - 22010158
 
 ## 1. Phân tích hiệu năng máy cá nhân
 **Thông tin máy:**
+ **CPU**: Intel Core i5-1135G7 (4 nhân vật lý, 8 luồng xử lý)
+- **RAM**: 8 GB DDR4
+- **GPU**: Intel Iris Xe Graphics (tích hợp)
 ![Ảnh](/images/Untitled.png)
-- **CPU**: Không hiện rõ model trong ảnh, nhưng hệ thống đang dùng khoảng **11% CPU**.
-- **RAM**: Tổng dung lượng RAM gần **8 GB**, hiện đang dùng tới **87%** → khá cao.
-- **Ứng dụng nặng nhất**: Trình duyệt **Cốc Cốc** đang chiếm **gần 500 MB RAM** (20 tiến trình), tiếp theo là **Visual Studio Code** (~221 MB).
-- **GPU**: Không có ứng dụng nào đang sử dụng GPU đáng kể (0%).
-- **Power usage**: Hầu hết tiến trình đều ở mức **"Very low"**, chỉ có "System" là **"Low"**.
 
+- **CPU**: Vi xử lý Intel Core i5 thế hệ 11 có công nghệ **Hyper-Threading**, nghĩa là mỗi nhân vật lý xử lý 2 luồng cùng lúc. Do đó:
+  - Máy có thể xử lý **8 luồng song song**, giúp tăng hiệu quả trong các tác vụ sử dụng đa luồng như trình duyệt, IDE, ứng dụng văn phòng...
+  - Tuy nhiên, hiệu năng vẫn bị giới hạn nếu ứng dụng cần nhiều nhân vật lý thực thụ.
+
+- **RAM**:
+  - Dung lượng RAM 8GB là mức phổ thông.
+  - Qua ảnh Task Manager: **RAM đang sử dụng 87%**, tức là **gần đầy** → nếu mở thêm ứng dụng nặng (IDE, máy ảo, trình duyệt nhiều tab), hệ thống sẽ bắt đầu **dùng bộ nhớ ảo (paging)**, làm **giảm hiệu năng rõ rệt**.
+
+- **GPU**:
+  - Không có GPU rời nên hiệu năng xử lý đồ họa (3D, render video, AI) sẽ rất giới hạn.
+  - GPU tích hợp Iris Xe phù hợp với các tác vụ nhẹ như xem video HD, làm việc văn phòng.
+
+- **Ứng dụng tiêu tốn tài nguyên** (theo ảnh):
+  - Cốc Cốc: ~500MB RAM.
+  - VS Code: ~220MB RAM.
+  - Ngoài ra, có nhiều tiến trình nền nhỏ (Runtime Broker, Search, System...) cùng tiêu tốn RAM.
 **Phân tích:**
 
 - RAM đang gần đầy (87%), có thể gây chậm khi chạy thêm ứng dụng nặng → **bộ nhớ là điểm nghẽn**.

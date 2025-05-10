@@ -6,9 +6,6 @@ categories:
   - "sveltekit"
   - "markdown"
   - "svelte"
-coverImage: "/images/jerry-zhang-ePpaQC2c1xA-unsplash.jpg"
-coverWidth: 16
-coverHeight: 9
 excerpt: Đề xuất đề tài và mô tả vấn đề
 ---
 # Báo cáo InfluxDB

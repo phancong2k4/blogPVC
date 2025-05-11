@@ -74,6 +74,3 @@ Thời tiết là yếu tố ảnh hưởng trực tiếp đến cuộc sống h
 - Hệ thống có thể thu thập và lưu trữ dữ liệu thời tiết liên tục.
 - Giao diện trực quan trên Grafana thể hiện xu hướng thời tiết (nhiệt độ, độ ẩm) theo ngày, tuần.
 - Người dùng có thể dễ dàng theo dõi và phân tích thông tin thời tiết.
-
-## 7. Ý nghĩa
-Đề tài giúp sinh viên hiểu cách thu thập, lưu trữ và phân tích dữ liệu thời gian thực. Ngoài ra, còn giúp phát triển kỹ năng sử dụng InfluxDB và Grafana trong các ứng dụng thực tế.

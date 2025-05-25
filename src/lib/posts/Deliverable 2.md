@@ -19,7 +19,6 @@ Hệ thống được xây dựng dựa trên kiến trúc phân tán gồm nhi�
 
 Client gửi các yêu cầu HTTP đến Load Balancer NGINX, NGINX sẽ phân phối các yêu cầu này đến các instance ứng dụng Node.js theo thuật toán cân bằng tải. Mỗi instance sẽ ghi dữ liệu log request vào một node InfluxDB riêng biệt. Các node InfluxDB có thể đồng bộ dữ liệu với nhau để tăng tính nhất quán. Dashboard lấy dữ liệu thông qua API Service, truy vấn và tổng hợp dữ liệu từ các node InfluxDB, rồi trả kết quả về cho người dùng.
 
-```mermaid
 sequenceDiagram
     participant Client
     participant RequestGen as Request Generator
@@ -56,7 +55,8 @@ sequenceDiagram
     API->>DB2: Query Data
     API->>DB3: Query Data
     API-->>View: Return Aggregated Data
-```
+Sơ đồ trình tự hệ thống
+
 
 ## 2. Mô tả chi tiết các thành phần trong hệ thống
 

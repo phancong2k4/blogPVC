@@ -1,16 +1,5 @@
----
-title: Deliverable 2
-date: "2025-01-05"
-updated: "2025-01-05"
-categories:
-  - "sveltekit"
-  - "web"
-  - "css"
-  - "markdown"
 
-
----
-Deliverable 2
+# Báo cáo Thiết kế Hệ thống (Deliverable 2)
 
 ## 1. Bản vẽ kiến trúc hệ thống
 

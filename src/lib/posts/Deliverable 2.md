@@ -5,11 +5,7 @@ updated: "2025-05-05"
 categories:
   - "sveltekit"
   - "markdown"
-coverWidth: 16
-coverHeight: 9
 excerpt: Deliverable 2
-  
-
 ---
 Deliverable 2
 
@@ -19,7 +15,7 @@ Hệ thống được xây dựng dựa trên kiến trúc phân tán gồm nhi�
 
 Client gửi các yêu cầu HTTP đến Load Balancer NGINX, NGINX sẽ phân phối các yêu cầu này đến các instance ứng dụng Node.js theo thuật toán cân bằng tải. Mỗi instance sẽ ghi dữ liệu log request vào một node InfluxDB riêng biệt. Các node InfluxDB có thể đồng bộ dữ liệu với nhau để tăng tính nhất quán. Dashboard lấy dữ liệu thông qua API Service, truy vấn và tổng hợp dữ liệu từ các node InfluxDB, rồi trả kết quả về cho người dùng.
 
-![sơ đồ trình tự ](/static/images/Sodotrinhtu.png)
+![sơ đồ trình tự ](/images/Sodotrinhtu.png)
 Sơ đồ trình tự hệ thống
 
 

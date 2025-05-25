@@ -139,8 +139,8 @@ Trình bày giao diện người dùng (frontend) gọi API để hiển thị l
 # Phân 3:  Mã nguồn (Code Snippets)
 
 ## 1. Ghi log vào InfluxDB từ ứng dụng Node.js  
-**File: influxClient.js**  
-**Chức năng: Kết nối đến cơ sở dữ liệu InfluxDB và ghi lại các thông tin log như: tên ứng dụng, endpoint được truy cập, mã trạng thái HTTP, thời gian phản hồi, và request ID.**
+**File:**`influxClient.js`
+**Chức năng:**Kết nối đến cơ sở dữ liệu InfluxDB và ghi lại các thông tin log như: tên ứng dụng, endpoint được truy cập, mã trạng thái HTTP, thời gian phản hồi, và request ID.
 
 ```js
 // Import các lớp cần thiết từ thư viện influxdb-client
@@ -175,8 +175,8 @@ module.exports = { logRequest };
 ---
 
 ## 2. Gọi hàm ghi log từ một route trong ứng dụng  
-**File: server.js**  
-**Chức năng: Khi client gửi request tới /api/data, server sẽ xử lý, tính thời gian phản hồi, và ghi log thông tin đó vào InfluxDB.**
+**File:**`server.js`
+**Chức năng:** Khi client gửi request tới /api/data, server sẽ xử lý, tính thời gian phản hồi, và ghi log thông tin đó vào InfluxDB.
 
 ```js
 const express = require('express');
@@ -211,8 +211,8 @@ app.listen(port, () => {
 ```
 ---
 ## 3. Tổng hợp dữ liệu từ nhiều node InfluxDB  
-**File: aggregator.js**  
-**Chức năng: Gọi các hàm lấy log từ nhiều node InfluxDB khác nhau và gộp lại thành một mảng duy nhất.**
+**File:**`aggregator.js`
+**Chức năng:** Gọi các hàm lấy log từ nhiều node InfluxDB khác nhau và gộp lại thành một mảng duy nhất.
 
 ```js
 // Import các hàm truy vấn log từ 3 node khác nhau
@@ -240,8 +240,8 @@ module.exports = { aggregateData };
 ```
 ---
 ## 4. API trả về dữ liệu log đã tổng hợp  
-**File: api.js**  
-**Chức năng: Cung cấp một API endpoint `/api/logs` để trả về toàn bộ dữ liệu log từ nhiều node.**
+**File:**`api.js`
+**Chức năng:**Cung cấp một API endpoint `/api/logs` để trả về toàn bộ dữ liệu log từ nhiều node.
 
 ```js
 const express = require('express');
@@ -261,8 +261,8 @@ module.exports = router;
 ---
 
 ## 5. Dashboard gọi API và hiển thị dữ liệu  
-**File: dashboard.html**  
-**Chức năng: Giao diện đơn giản hiển thị dữ liệu log theo dạng bảng, được gọi từ API `/api/logs`.**
+**File:**`dashboard.html`
+**Chức năng:** Giao diện đơn giản hiển thị dữ liệu log theo dạng bảng, được gọi từ API `/api/logs`.
 
 ```html
 <!DOCTYPE html>

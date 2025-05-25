@@ -19,42 +19,7 @@ Hệ thống được xây dựng dựa trên kiến trúc phân tán gồm nhi�
 
 Client gửi các yêu cầu HTTP đến Load Balancer NGINX, NGINX sẽ phân phối các yêu cầu này đến các instance ứng dụng Node.js theo thuật toán cân bằng tải. Mỗi instance sẽ ghi dữ liệu log request vào một node InfluxDB riêng biệt. Các node InfluxDB có thể đồng bộ dữ liệu với nhau để tăng tính nhất quán. Dashboard lấy dữ liệu thông qua API Service, truy vấn và tổng hợp dữ liệu từ các node InfluxDB, rồi trả kết quả về cho người dùng.
 
-sequenceDiagram
-    participant Client
-    participant RequestGen as Request Generator
-    participant NGINX as NGINX Load Balancer
-    participant App1 as App Web 1 (Node.js)
-    participant App2 as App Web 2 (Node.js)
-    participant App3 as App Web 3 (Node.js)
-    participant DB1 as InfluxDB-1
-    participant DB2 as InfluxDB-2
-    participant DB3 as InfluxDB-3
-    participant API as API Service
-    participant View as View Dashboard
-
-    Client->>NGINX: HTTP Request
-    RequestGen->>NGINX: Generate Load
-
-    alt Load balanced to App1
-        NGINX->>App1: Forward Request
-        App1->>DB1: Log Request Data
-    else Load balanced to App2
-        NGINX->>App2: Forward Request
-        App2->>DB2: Log Request Data
-    else Load balanced to App3
-        NGINX->>App3: Forward Request
-        App3->>DB3: Log Request Data
-    end
-
-    DB1-->>DB2: Data Sync (optional)
-    DB2-->>DB3: Data Sync (optional)
-    DB3-->>DB1: Data Sync (optional)
-
-    View->>API: Request Metrics
-    API->>DB1: Query Data
-    API->>DB2: Query Data
-    API->>DB3: Query Data
-    API-->>View: Return Aggregated Data
+![sơ đồ trình tự ](/static/images/Sodotrinhtu.png)
 Sơ đồ trình tự hệ thống
 
 

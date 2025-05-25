@@ -69,24 +69,6 @@ Dữ liệu được lưu trữ theo mô hình time-series trong InfluxDB với 
   - `request_id`: mã định danh request.
 - **Timestamp**: thời gian ghi nhận log (định dạng ISO 8601 hoặc Unix timestamp).
 
-### Ví dụ một bản ghi:
-
-```json
-{
-  "measurement": "request_logs",
-  "tags": {
-    "app_name": "App1",
-    "status_code": "200",
-    "endpoint": "/api/data"
-  },
-  "fields": {
-    "response_time": 123.45,
-    "request_id": "abcd1234xyz"
-  },
-  "timestamp": "2025-05-25T10:00:00Z"
-}
-```
-
 **Phân tán và đồng bộ dữ liệu**:
 
 - Mỗi node InfluxDB chứa dữ liệu của một instance app riêng, giảm tải ghi dữ liệu.

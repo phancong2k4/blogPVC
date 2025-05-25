@@ -1,5 +1,17 @@
+---
+title: "Deliverable 2"
+date: "2025-05-05"
+updated: "2025-05-05"
+categories:
+  - "sveltekit"
+  - "markdown"
+coverWidth: 16
+coverHeight: 9
+excerpt: Deliverable 2
+  
 
-# Báo cáo Thiết kế Hệ thống (Deliverable 2)
+---
+Deliverable 2
 
 ## 1. Bản vẽ kiến trúc hệ thống
 

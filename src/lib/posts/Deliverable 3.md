@@ -95,8 +95,9 @@ Giao diện Data Explorer cho phép:
 - Xuất dữ liệu ra CSV để phân tích thêm
 ![influxdb](/images/influxdb.png)
 
-
+---
 # Phân 3:  Mã nguồn (Code Snippets)
+---
 ## 1. Cấu hình Docker Compose (`docker-compose.yml`)
 Tệp này định nghĩa các dịch vụ chính trong hệ thống, bao gồm `api`, `view`, `request`, `nginx`, và các ứng dụng backend (`app-1`, `app-2`, `app-3`).
 
@@ -206,7 +207,7 @@ app.post('/log', (req, res) => {
   res.sendStatus(200);
 });
 ```
-**Chú thích:**  
+**Chú thích**:  
 Sử dụng thư viện InfluxDB client để gửi dữ liệu dạng Point với tag app và trường count. API /log nhận dữ liệu từ các ứng dụng backend và ghi vào InfluxDB.
 ---
 
@@ -233,10 +234,9 @@ Giao diện người dùng cho phép gửi nhiều yêu cầu đến hệ thốn
   });
 </script>
 ```
-**Chú thích:**  
+**Chú thích**:  
 Form cho phép người dùng nhập URL và số lượng request muốn gửi. Script JavaScript gửi các request đến URL đã nhập để kiểm tra hệ thống.
 ---
-
 ## 5. Hiển thị dữ liệu từ InfluxDB (view/index.js)
 Dịch vụ view truy vấn dữ liệu từ InfluxDB và hiển thị biểu đồ thống kê.
 
@@ -257,9 +257,9 @@ app.get('/data', async (req, res) => {
   res.json(data);
 });
 ```
-**Chú thích:**  
+**Chú thích**:  
 Truy vấn dữ liệu từ InfluxDB trong khoảng thời gian 1 giờ gần nhất. API /data trả về dữ liệu JSON để hiển thị trên giao diện người dùng.
-
+---
 # Phần 4: Danh sách tính năng đã hoàn thành
 
 ---

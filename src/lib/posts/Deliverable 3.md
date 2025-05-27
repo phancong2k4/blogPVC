@@ -50,9 +50,7 @@ Dự án xây dựng một hệ thống phân tán sử dụng mô hình microse
   → Đã sửa API Service để đảm bảo định dạng dữ liệu đúng khi truy xuất từ nhiều DB.
 
 
-# Phần 2: demo hệ thống
-
-# Demo hoạt động của hệ thống
+# Phần 2: Demo hoạt động của hệ thống
 
 Để minh họa cho hoạt động của hệ thống, em đã xây dựng một môi trường ảo sử dụng Docker gồm nhiều container hoạt động cùng nhau. Hệ thống bao gồm các thành phần: `api`, `view`, `request`, `nginx`, và các app thành phần (`app-1`, `app-2`, `app-3`). Dưới đây là mô tả hoạt động chính kèm ảnh chụp giao diện minh họa:
 
@@ -98,8 +96,7 @@ Giao diện Data Explorer cho phép:
 ![influxdb](/images/influxdb.png)
 # Phân 3:  Mã nguồn (Code Snippets)
 
-# 1. Cấu hình Docker Compose (`docker-compose.yml`)
-
+## 1. Cấu hình Docker Compose (`docker-compose.yml`)
 Tệp này định nghĩa các dịch vụ chính trong hệ thống, bao gồm `api`, `view`, `request`, `nginx`, và các ứng dụng backend (`app-1`, `app-2`, `app-3`).
 
 ```js
@@ -162,16 +159,9 @@ volumes:
   influxdb_data:
 ```
 **Chú thích:**
-
-`api`, `view` và `request` là các dịch vụ xử lý API, hiển thị dữ liệu, và gửi yêu cầu tương ứng.
-
-nginx đóng vai trò là reverse proxy, phân phối lưu lượng đến các ứng dụng backend.
-
-`app-1`, `app-2`, `app-3` là các ứng dụng backend xử lý yêu cầu.
-
-influxdb là cơ sở dữ liệu thời gian thực để lưu trữ và phân tích dữ liệu request.
+`api`, `view` và `request` là các dịch vụ xử lý API, hiển thị dữ liệu, và gửi yêu cầu tương ứng. `nginx` đóng vai trò là reverse proxy, phân phối lưu lượng đến các ứng dụng backend. `app-1`, `app-2`, `app-3` là các ứng dụng backend xử lý yêu cầu. `influxdb` là cơ sở dữ liệu thời gian thực để lưu trữ và phân tích dữ liệu request.
 ---
-# 2. Cấu hình Nginx (nginx.conf)
+## 2. Cấu hình Nginx (nginx.conf)
 Tệp cấu hình `Nginx` định nghĩa cách phân phối lưu lượng đến các ứng dụng backend.
 
 ```js
@@ -194,11 +184,10 @@ http {
 }
 ```
 **Chú thích:**
-upstream backend định nghĩa nhóm các ứng dụng backend để Nginx phân phối lưu lượng.
-proxy_pass chuyển tiếp các yêu cầu đến nhóm backend.
+upstream backend định nghĩa nhóm các ứng dụng backend để Nginx phân phối lưu lượng. `proxy_pass` chuyển tiếp các yêu cầu đến nhóm backend.
 ---
 
-# 3. Gửi dữ liệu đến InfluxDB (api/index.js)
+## 3. Gửi dữ liệu đến InfluxDB (api/index.js)
 Đoạn mã này trong dịch vụ api gửi dữ liệu `request` đến `InfluxDB` để lưu trữ và phân tích.
 ```js
 const { InfluxDB, Point } = require('@influxdata/influxdb-client');
@@ -215,13 +204,10 @@ app.post('/log', (req, res) => {
 });
 ```
 **Chú thích:**
-
-Sử dụng thư viện InfluxDB client để gửi dữ liệu dạng Point với tag app và trường count.
-
-API /log nhận dữ liệu từ các ứng dụng backend và ghi vào InfluxDB.
+Sử dụng thư viện InfluxDB client để gửi dữ liệu dạng Point với tag app và trường count.API /log nhận dữ liệu từ các ứng dụng backend và ghi vào InfluxDB.
 ---
 
-# 4. Giao diện gửi yêu cầu (request/index.html)
+## 4. Giao diện gửi yêu cầu (request/index.html)
 Giao diện người dùng cho phép gửi nhiều yêu cầu đến hệ thống để kiểm tra khả năng xử lý.
 ```html
 <form id="request-form">
@@ -244,13 +230,12 @@ Giao diện người dùng cho phép gửi nhiều yêu cầu đến hệ thốn
 </script>
 ```
 **Chú thích:**
-Form cho phép người dùng nhập URL và số lượng request muốn gửi.
-Script JavaScript gửi các request đến URL đã nhập để kiểm tra hệ thống.
+Form cho phép người dùng nhập URL và số lượng request muốn gửi. Script JavaScript gửi các request đến URL đã nhập để kiểm tra hệ thống.
 ---
 
 # 5. Hiển thị dữ liệu từ InfluxDB (view/index.js)
 Dịch vụ view truy vấn dữ liệu từ InfluxDB và hiển thị biểu đồ thống kê.
-```c
+```js
 const { InfluxDB } = require('@influxdata/influxdb-client');
 
 const influxDB = new InfluxDB({ url: 'http://influxdb:8086', token: 'your-token' });
@@ -268,69 +253,70 @@ app.get('/data', async (req, res) => {
 });
 ```
 **Chú thích:**
-Truy vấn dữ liệu từ InfluxDB trong khoảng thời gian 1 giờ gần nhất.
-API /data trả về dữ liệu JSON để hiển thị trên giao diện người dùng.
+Truy vấn dữ liệu từ InfluxDB trong khoảng thời gian 1 giờ gần nhất. API /data trả về dữ liệu JSON để hiển thị trên giao diện người dùng.
+
 # Phần 4: Danh sách tính năng đã hoàn thành
 
-## 1. Giao tiếp phân tán giữa các node InfluxDB
-- **Mô tả**:  
-  Hệ thống đã triển khai thành công việc gọi dữ liệu log từ nhiều node InfluxDB khác nhau song song, đảm bảo thu thập dữ liệu nhanh và đồng bộ.
+---
 
-- **Ví dụ hoạt động**:  
-  Khi gọi API tổng hợp log, hàm `aggregateData()` sẽ gửi truy vấn đồng thời đến 3 node InfluxDB khác nhau và nhận về dữ liệu log từ cả ba. Dữ liệu này sau đó được gộp lại thành một mảng duy nhất, phục vụ cho việc phân tích và hiển thị.
+## 1. Giao tiếp phân tán giữa các thành phần của hệ thống
 
-- **Đạt được mục tiêu**:  
-  Tăng tốc độ truy xuất log, tránh tắc nghẽn khi chỉ lấy dữ liệu từ một node duy nhất, nâng cao độ tin cậy và khả năng mở rộng của hệ thống.
+- Hệ thống bao gồm ba ứng dụng backend (`app-1`, `app-2`, `app-3`) được triển khai độc lập, hoạt động song song.
+- Các backend kết nối thông qua **reverse proxy sử dụng NGINX** với cơ chế **cân bằng tải (load balancing)**.
+- Cơ chế phân phối request kiểu **round-robin** giúp tăng hiệu năng xử lý và đảm bảo tính phân tán.
+
+**Ví dụ minh họa**:  
+Khi gửi nhiều request từ giao diện frontend hoặc script kiểm thử, NGINX sẽ phân phối các request lần lượt đến từng backend (app-1, app-2, app-3), cho phép xử lý song song và giảm tải.
 
 ---
 
-## 2. Ghi log chi tiết từ ứng dụng Node.js lên InfluxDB
-- **Mô tả**:  
-  Ứng dụng Node.js có thể ghi lại các thông tin log chi tiết như tên ứng dụng, endpoint được truy cập, trạng thái HTTP, thời gian phản hồi và ID của request vào cơ sở dữ liệu InfluxDB.
+## 2. Lưu trữ và giám sát dữ liệu thời gian thực với InfluxDB
 
-- **Ví dụ hoạt động**:  
-  Mỗi khi client gọi endpoint `/api/data`, server sẽ tính toán thời gian phản hồi và gọi hàm `logRequest()` để gửi thông tin này vào InfluxDB. Điều này giúp theo dõi hiệu năng và hoạt động thực tế của ứng dụng.
+- Các backend được tích hợp với **InfluxDB** để ghi lại log mỗi khi có request mới.
+- Mỗi bản ghi chứa thông tin như tên app, số lượng request, thời gian thực hiện.
 
-- **Đạt được mục tiêu**:  
-  Cung cấp dữ liệu giám sát realtime, hỗ trợ phát hiện nhanh các lỗi hoặc điểm nghẽn trong hệ thống.
-
----
-
-## 3. Xử lý lỗi cơ bản và đảm bảo độ tin cậy
-- **Mô tả**:  
-  Trong quá trình tổng hợp dữ liệu, hệ thống đã thêm các đoạn code xử lý lỗi, đảm bảo khi một node không phản hồi hoặc có lỗi, ứng dụng vẫn có thể trả về dữ liệu từ các node còn lại mà không bị gián đoạn.
-
-- **Ví dụ hoạt động**:  
-  Hàm `aggregateData()` sử dụng `try-catch` để bắt lỗi khi truy vấn dữ liệu. Nếu một node gặp sự cố, hệ thống sẽ log lỗi và trả về dữ liệu còn lại thay vì bị dừng hoặc crash.
-
-- **Đạt được mục tiêu**:  
-  Nâng cao tính ổn định và khả năng chịu lỗi của hệ thống trong môi trường thực tế.
+**Ví dụ minh họa**:  
+App-1 nhận một request ➝ ghi dữ liệu: `app: app-1`, `count: 1`, `timestamp: <thời gian>`.  
+Dữ liệu này có thể truy vấn qua **InfluxDB Data Explorer** để phân tích hoạt động hệ thống.
 
 ---
 
-## 4. API trả về dữ liệu log tổng hợp cho frontend
-- **Mô tả**:  
-  Đã phát triển API `/api/logs` giúp frontend hoặc các dịch vụ khác dễ dàng lấy dữ liệu log tổng hợp từ nhiều node.
+## 3. Hiển thị dữ liệu bằng giao diện trực quan (UI Dashboard)
 
-- **Ví dụ hoạt động**:  
-  Khi frontend gọi API này, server sẽ trả về dữ liệu log dưới dạng JSON để hiển thị hoặc xử lý tiếp.
-
-- **Đạt được mục tiêu**:  
-  Giúp phân tách rõ ràng giữa backend và frontend, nâng cao modularity, đồng thời tiện lợi cho việc mở rộng giao diện người dùng.
+- Sử dụng **InfluxDB Data Explorer** để truy vấn và trực quan hóa dữ liệu dạng biểu đồ.
+- Hỗ trợ người dùng theo dõi **số lượng request theo thời gian** cho từng backend.
 
 ---
 
-## 5. Giao diện Dashboard hiển thị log realtime
-- **Mô tả**:  
-  Xây dựng dashboard đơn giản, trực quan giúp người dùng xem được log phân tán trên nhiều node dưới dạng bảng với các trường thông tin chính.
+## 4. Xây dựng giao diện người dùng để gửi request kiểm thử
 
-- **Ví dụ hoạt động**:  
-  Dashboard gọi API `/api/logs`, nhận dữ liệu và cập nhật bảng log liên tục khi người dùng tải lại trang.
+- Cung cấp một giao diện HTML đơn giản để người dùng nhập:
+  - **URL đích** (ví dụ: `http://localhost:80`)
+  - **Số lượng request** muốn gửi.
+- Giao diện giúp mô phỏng tải cao để kiểm thử hệ thống.
 
-- **Đạt được mục tiêu**:  
-  Tăng trải nghiệm người dùng, hỗ trợ việc giám sát hệ thống dễ dàng và nhanh chóng hơn.
+**Ví dụ minh họa**:  
+Người dùng nhập `http://localhost:80` và `100 request` ➝ hệ thống tự động gửi 100 request tuần tự đến reverse proxy NGINX.
 
 ---
+
+## 5. Cân bằng tải bằng reverse proxy (NGINX)
+
+- NGINX được cấu hình để phân phối request theo **round-robin** đến các backend.
+- Giúp **tối ưu tài nguyên**, **tránh quá tải**, và tăng **tính sẵn sàng** của hệ thống.
+
+---
+
+## 6. Triển khai hệ thống bằng Docker Compose
+
+- Toàn bộ hệ thống (frontend, backend, NGINX, InfluxDB, API) được đóng gói bằng **Docker**.
+- Dễ dàng triển khai, tái sử dụng và mở rộng.
+
+**Ví dụ minh họa**:  
+Chạy lệnh `docker-compose up` ➝ toàn bộ container được khởi động, hệ thống hoạt động hoàn chỉnh ngay trên môi trường local.
+
+---
+
 
 # Phần 5: Kế hoạch tiếp theo
 

@@ -94,8 +94,9 @@ Giao diện Data Explorer cho phép:
 - Lọc và trực quan hóa dữ liệu
 - Xuất dữ liệu ra CSV để phân tích thêm
 ![influxdb](/images/influxdb.png)
-# Phân 3:  Mã nguồn (Code Snippets)
 
+
+# Phân 3:  Mã nguồn (Code Snippets)
 ## 1. Cấu hình Docker Compose (`docker-compose.yml`)
 Tệp này định nghĩa các dịch vụ chính trong hệ thống, bao gồm `api`, `view`, `request`, `nginx`, và các ứng dụng backend (`app-1`, `app-2`, `app-3`).
 
@@ -158,9 +159,10 @@ services:
 volumes:
   influxdb_data:
 ```
-**Chú thích:**
+**Chú thích:**  
 `api`, `view` và `request` là các dịch vụ xử lý API, hiển thị dữ liệu, và gửi yêu cầu tương ứng. `nginx` đóng vai trò là reverse proxy, phân phối lưu lượng đến các ứng dụng backend. `app-1`, `app-2`, `app-3` là các ứng dụng backend xử lý yêu cầu. `influxdb` là cơ sở dữ liệu thời gian thực để lưu trữ và phân tích dữ liệu request.
 ---
+
 ## 2. Cấu hình Nginx (nginx.conf)
 Tệp cấu hình `Nginx` định nghĩa cách phân phối lưu lượng đến các ứng dụng backend.
 
@@ -183,12 +185,13 @@ http {
   }
 }
 ```
-**Chú thích:**
+**Chú thích:**  
 upstream backend định nghĩa nhóm các ứng dụng backend để Nginx phân phối lưu lượng. `proxy_pass` chuyển tiếp các yêu cầu đến nhóm backend.
 ---
 
 ## 3. Gửi dữ liệu đến InfluxDB (api/index.js)
 Đoạn mã này trong dịch vụ api gửi dữ liệu `request` đến `InfluxDB` để lưu trữ và phân tích.
+
 ```js
 const { InfluxDB, Point } = require('@influxdata/influxdb-client');
 
@@ -203,12 +206,13 @@ app.post('/log', (req, res) => {
   res.sendStatus(200);
 });
 ```
-**Chú thích:**
-Sử dụng thư viện InfluxDB client để gửi dữ liệu dạng Point với tag app và trường count.API /log nhận dữ liệu từ các ứng dụng backend và ghi vào InfluxDB.
+**Chú thích:**  
+Sử dụng thư viện InfluxDB client để gửi dữ liệu dạng Point với tag app và trường count. API /log nhận dữ liệu từ các ứng dụng backend và ghi vào InfluxDB.
 ---
 
 ## 4. Giao diện gửi yêu cầu (request/index.html)
 Giao diện người dùng cho phép gửi nhiều yêu cầu đến hệ thống để kiểm tra khả năng xử lý.
+
 ```html
 <form id="request-form">
   <label for="url">URL:</label>
@@ -229,12 +233,13 @@ Giao diện người dùng cho phép gửi nhiều yêu cầu đến hệ thốn
   });
 </script>
 ```
-**Chú thích:**
+**Chú thích:**  
 Form cho phép người dùng nhập URL và số lượng request muốn gửi. Script JavaScript gửi các request đến URL đã nhập để kiểm tra hệ thống.
 ---
 
-# 5. Hiển thị dữ liệu từ InfluxDB (view/index.js)
+## 5. Hiển thị dữ liệu từ InfluxDB (view/index.js)
 Dịch vụ view truy vấn dữ liệu từ InfluxDB và hiển thị biểu đồ thống kê.
+
 ```js
 const { InfluxDB } = require('@influxdata/influxdb-client');
 
@@ -252,7 +257,7 @@ app.get('/data', async (req, res) => {
   res.json(data);
 });
 ```
-**Chú thích:**
+**Chú thích:**  
 Truy vấn dữ liệu từ InfluxDB trong khoảng thời gian 1 giờ gần nhất. API /data trả về dữ liệu JSON để hiển thị trên giao diện người dùng.
 
 # Phần 4: Danh sách tính năng đã hoàn thành

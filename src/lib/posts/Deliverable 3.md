@@ -98,182 +98,178 @@ Giao diện Data Explorer cho phép:
 ![influxdb](/images/influxdb.png)
 # Phân 3:  Mã nguồn (Code Snippets)
 
-## 1. Ghi log vào InfluxDB từ ứng dụng Node.js  
-**File:**`influxClient.js`.
+# 1. Cấu hình Docker Compose (`docker-compose.yml`)
 
-**Chức năng:**Kết nối đến cơ sở dữ liệu InfluxDB và ghi lại các thông tin log như: tên ứng dụng, endpoint được truy cập, mã trạng thái HTTP, thời gian phản hồi, và request ID.
+Tệp này định nghĩa các dịch vụ chính trong hệ thống, bao gồm `api`, `view`, `request`, `nginx`, và các ứng dụng backend (`app-1`, `app-2`, `app-3`).
 
 ```js
-// Import các lớp cần thiết từ thư viện influxdb-client
-const { InfluxDB, Point } = require('@influxdata/influxdb-client');
+version: '3.8'
 
-// Khởi tạo client InfluxDB bằng các thông tin cấu hình từ biến môi trường
-const influxDB = new InfluxDB({
-  url: process.env.INFLUX_URL,     // URL của InfluxDB server
-  token: process.env.INFLUX_TOKEN, // Token để xác thực
-});
+services:
+  api:
+    build: ./api
+    ports:
+      - "3004:3004"
+    depends_on:
+      - influxdb
 
-// Lấy đối tượng write API để ghi dữ liệu vào bucket cụ thể
-const writeApi = influxDB.getWriteApi(
-  process.env.INFLUX_ORG,          // Tên tổ chức trên InfluxDB
-  process.env.INFLUX_BUCKET        // Tên bucket chứa log
-);
+  view:
+    build: ./view
+    ports:
+      - "3005:3005"
+    depends_on:
+      - influxdb
 
-// Hàm ghi log khi có request xảy ra
-function logRequest(data) {
-  const point = new Point('request_logs')         // Tạo một "point" mới thuộc measurement "request_logs"
-    .tag('app_name', data.app)                    // Gắn tag tên ứng dụng
-    .tag('status_code', data.status)              // Gắn tag mã trạng thái HTTP
-    .tag('endpoint', data.endpoint)               // Gắn tag endpoint được truy cập
-    .floatField('response_time', data.time)       // Trường dữ liệu thời gian phản hồi dạng số thực
-    .stringField('request_id', data.id);          // Trường dữ liệu chuỗi là ID của request
+  request:
+    build: ./request
+    ports:
+      - "3006:3006"
 
-  writeApi.writePoint(point);                     // Thực hiện ghi dữ liệu vào InfluxDB
-}
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app-1
+      - app-2
+      - app-3
 
-module.exports = { logRequest };
+  app-1:
+    build: ./app
+    ports:
+      - "3001:3000"
+
+  app-2:
+    build: ./app
+    ports:
+      - "3002:3000"
+
+  app-3:
+    build: ./app
+    ports:
+      - "3003:3000"
+
+  influxdb:
+    image: influxdb:2.0
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+
+volumes:
+  influxdb_data:
 ```
+**Chú thích:**
+
+`api`, `view` và `request` là các dịch vụ xử lý API, hiển thị dữ liệu, và gửi yêu cầu tương ứng.
+
+nginx đóng vai trò là reverse proxy, phân phối lưu lượng đến các ứng dụng backend.
+
+`app-1`, `app-2`, `app-3` là các ứng dụng backend xử lý yêu cầu.
+
+influxdb là cơ sở dữ liệu thời gian thực để lưu trữ và phân tích dữ liệu request.
 ---
-
-## 2. Gọi hàm ghi log từ một route trong ứng dụng  
-**File:**`server.js`.
-
-**Chức năng:** Khi client gửi request tới /api/data, server sẽ xử lý, tính thời gian phản hồi, và ghi log thông tin đó vào InfluxDB.
+# 2. Cấu hình Nginx (nginx.conf)
+Tệp cấu hình `Nginx` định nghĩa cách phân phối lưu lượng đến các ứng dụng backend.
 
 ```js
-const express = require('express');
-const { logRequest } = require('./influxClient'); // Import hàm ghi log
+events {}
 
-const app = express();
-const port = 3000;
+http {
+  upstream backend {
+    server app-1:3000;
+    server app-2:3000;
+    server app-3:3000;
+  }
 
-app.get('/api/data', (req, res) => {
-  const startTime = Date.now(); // Lưu lại thời điểm bắt đầu xử lý request
+  server {
+    listen 80;
 
-  // Giả lập thời gian xử lý bất đồng bộ (delay ngẫu nhiên)
-  setTimeout(() => {
-    const responseTime = Date.now() - startTime; // Tính thời gian xử lý
-
-    // Gọi hàm log để ghi lại dữ liệu log vào InfluxDB
-    logRequest({
-      app: 'NodeApp-1',                        // Tên ứng dụng
-      status: 200,                             // HTTP Status
-      endpoint: '/api/data',                   // Endpoint được gọi
-      time: responseTime,                      // Thời gian phản hồi
-      id: Math.random().toString(36).substring(7), // Tạo ID ngẫu nhiên cho request
-    });
-
-    res.json({ message: 'Hello from NodeApp-1' }); // Phản hồi JSON về client
-  }, Math.random() * 100); // Độ trễ giả lập
-});
-
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
-```
----
-## 3. Tổng hợp dữ liệu từ nhiều node InfluxDB  
-**File:**`aggregator.js`.
-
-**Chức năng:** Gọi các hàm lấy log từ nhiều node InfluxDB khác nhau và gộp lại thành một mảng duy nhất.
-
-```js
-// Import các hàm truy vấn log từ 3 node khác nhau
-const { queryNode1, queryNode2, queryNode3 } = require('./queryServices');
-
-async function aggregateData() {
-  try {
-    // Gọi đồng thời cả 3 node, tăng tốc độ lấy dữ liệu
-    const [data1, data2, data3] = await Promise.all([
-      queryNode1(),
-      queryNode2(),
-      queryNode3(),
-    ]);
-
-    // Gộp dữ liệu từ cả 3 node lại
-    const mergedData = [...data1, ...data2, ...data3];
-    return mergedData;
-  } catch (error) {
-    console.error('Lỗi khi tổng hợp dữ liệu:', error);
-    return []; // Trả về mảng rỗng nếu có lỗi
+    location / {
+      proxy_pass http://backend;
+    }
   }
 }
-
-module.exports = { aggregateData };
 ```
+**Chú thích:**
+upstream backend định nghĩa nhóm các ứng dụng backend để Nginx phân phối lưu lượng.
+proxy_pass chuyển tiếp các yêu cầu đến nhóm backend.
 ---
-## 4. API trả về dữ liệu log đã tổng hợp  
-**File:**`api.js`.
 
-**Chức năng:**Cung cấp một API endpoint `/api/logs` để trả về toàn bộ dữ liệu log từ nhiều node.
-
+# 3. Gửi dữ liệu đến InfluxDB (api/index.js)
+Đoạn mã này trong dịch vụ api gửi dữ liệu `request` đến `InfluxDB` để lưu trữ và phân tích.
 ```js
-const express = require('express');
-const { aggregateData } = require('./aggregator'); // Import hàm tổng hợp
+const { InfluxDB, Point } = require('@influxdata/influxdb-client');
 
-const router = express.Router();
+const influxDB = new InfluxDB({ url: 'http://influxdb:8086', token: 'your-token' });
+const writeApi = influxDB.getWriteApi('your-org', 'your-bucket');
 
-// Khi client gọi /api/logs, trả về toàn bộ log đã tổng hợp
-router.get('/logs', async (req, res) => {
-  const logs = await aggregateData(); // Gọi hàm lấy dữ liệu
-  res.json({ logs });                 // Trả về log dạng JSON
+app.post('/log', (req, res) => {
+  const point = new Point('web-requests')
+    .tag('app', req.body.app)
+    .intField('count', req.body.count);
+  writeApi.writePoint(point);
+  res.sendStatus(200);
 });
-
-module.exports = router;
 ```
+**Chú thích:**
 
+Sử dụng thư viện InfluxDB client để gửi dữ liệu dạng Point với tag app và trường count.
+
+API /log nhận dữ liệu từ các ứng dụng backend và ghi vào InfluxDB.
 ---
 
-## 5. Dashboard gọi API và hiển thị dữ liệu  
-**File:**`dashboard.html`.
-
-**Chức năng:** Giao diện đơn giản hiển thị dữ liệu log theo dạng bảng, được gọi từ API `/api/logs`.
-
+# 4. Giao diện gửi yêu cầu (request/index.html)
+Giao diện người dùng cho phép gửi nhiều yêu cầu đến hệ thống để kiểm tra khả năng xử lý.
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Dashboard Logs</title>
-</head>
-<body>
-  <h2>Logs thu thập từ nhiều node</h2>
+<form id="request-form">
+  <label for="url">URL:</label>
+  <input type="text" id="url" name="url" value="http://nginx:80/">
+  <label for="count">Số lượng request:</label>
+  <input type="number" id="count" name="count" value="100">
+  <button type="submit">Gửi</button>
+</form>
 
-  <!-- Bảng để hiển thị dữ liệu -->
-  <table border="1" id="logTable">
-    <tr>
-      <th>App</th>
-      <th>Endpoint</th>
-      <th>Status</th>
-      <th>Response Time</th>
-      <th>Request ID</th>
-    </tr>
-  </table>
-
-  <script>
-    // Gọi API để lấy dữ liệu log từ backend
-    fetch('/api/logs')
-      .then(res => res.json())
-      .then(data => {
-        const table = document.getElementById('logTable');
-        
-        // Duyệt qua từng log và thêm dòng vào bảng
-        data.logs.forEach(log => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${log.app_name}</td>
-            <td>${log.endpoint}</td>
-            <td>${log.status_code}</td>
-            <td>${log.response_time}</td>
-            <td>${log.request_id}</td>
-          `;
-          table.appendChild(row);
-        });
-      });
-  </script>
-</body>
-</html>
+<script>
+  document.getElementById('request-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const url = document.getElementById('url').value;
+    const count = document.getElementById('count').value;
+    for (let i = 0; i < count; i++) {
+      fetch(url);
+    }
+  });
+</script>
 ```
+**Chú thích:**
+Form cho phép người dùng nhập URL và số lượng request muốn gửi.
+Script JavaScript gửi các request đến URL đã nhập để kiểm tra hệ thống.
 ---
+
+# 5. Hiển thị dữ liệu từ InfluxDB (view/index.js)
+Dịch vụ view truy vấn dữ liệu từ InfluxDB và hiển thị biểu đồ thống kê.
+```c
+const { InfluxDB } = require('@influxdata/influxdb-client');
+
+const influxDB = new InfluxDB({ url: 'http://influxdb:8086', token: 'your-token' });
+const queryApi = influxDB.getQueryApi('your-org');
+
+app.get('/data', async (req, res) => {
+  const fluxQuery = `from(bucket:"your-bucket")
+    |> range(start: -1h)
+    |> filter(fn: (r) => r._measurement == "web-requests")`;
+  const data = [];
+  for await (const { values, tableMeta } of queryApi.iterateRows(fluxQuery)) {
+    data.push(tableMeta.toObject(values));
+  }
+  res.json(data);
+});
+```
+**Chú thích:**
+Truy vấn dữ liệu từ InfluxDB trong khoảng thời gian 1 giờ gần nhất.
+API /data trả về dữ liệu JSON để hiển thị trên giao diện người dùng.
 # Phần 4: Danh sách tính năng đã hoàn thành
 
 ## 1. Giao tiếp phân tán giữa các node InfluxDB

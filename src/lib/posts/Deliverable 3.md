@@ -270,8 +270,8 @@ Chú thích: Truy vấn dữ liệu từ InfluxDB trong khoảng thời gian 1 g
 ## 1. Giao tiếp phân tán giữa các thành phần của hệ thống
 
 - Hệ thống bao gồm ba ứng dụng backend (`app-1`, `app-2`, `app-3`) được triển khai độc lập, hoạt động song song.
-- Các backend kết nối thông qua **reverse proxy sử dụng NGINX** với cơ chế **cân bằng tải (load balancing)**.
-- Cơ chế phân phối request kiểu **round-robin** giúp tăng hiệu năng xử lý và đảm bảo tính phân tán.
+- Các backend kết nối thông qua reverse proxy sử dụng NGINX với cơ chế cân bằng tải (load balancing).
+- Cơ chế phân phối request kiểu round-robin giúp tăng hiệu năng xử lý và đảm bảo tính phân tán.
 
 **Ví dụ minh họa**:  
 Khi gửi nhiều request từ giao diện frontend hoặc script kiểm thử, NGINX sẽ phân phối các request lần lượt đến từng backend (app-1, app-2, app-3), cho phép xử lý song song và giảm tải.
@@ -280,19 +280,19 @@ Khi gửi nhiều request từ giao diện frontend hoặc script kiểm thử, 
 
 ## 2. Lưu trữ và giám sát dữ liệu thời gian thực với InfluxDB
 
-- Các backend được tích hợp với **InfluxDB** để ghi lại log mỗi khi có request mới.
+- Các backend được tích hợp với InfluxDB để ghi lại log mỗi khi có request mới.
 - Mỗi bản ghi chứa thông tin như tên app, số lượng request, thời gian thực hiện.
 
 **Ví dụ minh họa**:  
 App-1 nhận một request ➝ ghi dữ liệu: `app: app-1`, `count: 1`, `timestamp: <thời gian>`.  
-Dữ liệu này có thể truy vấn qua **InfluxDB Data Explorer** để phân tích hoạt động hệ thống.
+Dữ liệu này có thể truy vấn qua InfluxDB Data Explorer để phân tích hoạt động hệ thống.
 
 ---
 
 ## 3. Hiển thị dữ liệu bằng giao diện trực quan (UI Dashboard)
 
-- Sử dụng **InfluxDB Data Explorer** để truy vấn và trực quan hóa dữ liệu dạng biểu đồ.
-- Hỗ trợ người dùng theo dõi **số lượng request theo thời gian** cho từng backend.
+- Sử dụng InfluxDB Data Explorer để truy vấn và trực quan hóa dữ liệu dạng biểu đồ.
+- Hỗ trợ người dùng theo dõi số lượng request theo thời gian cho từng backend.
 
 ---
 
@@ -310,14 +310,14 @@ Người dùng nhập `http://localhost:80` và `100 request` ➝ hệ thống t
 
 ## 5. Cân bằng tải bằng reverse proxy (NGINX)
 
-- NGINX được cấu hình để phân phối request theo **round-robin** đến các backend.
-- Giúp **tối ưu tài nguyên**, **tránh quá tải**, và tăng **tính sẵn sàng** của hệ thống.
+- NGINX được cấu hình để phân phối request theo round-robin đến các backend.
+- Giúp tối ưu tài nguyên, tránh quá tải, và tăng tính sẵn sàng của hệ thống.
 
 ---
 
 ## 6. Triển khai hệ thống bằng Docker Compose
 
-- Toàn bộ hệ thống (frontend, backend, NGINX, InfluxDB, API) được đóng gói bằng **Docker**.
+- Toàn bộ hệ thống (frontend, backend, NGINX, InfluxDB, API) được đóng gói bằng Docker.
 - Dễ dàng triển khai, tái sử dụng và mở rộng.
 
 **Ví dụ minh họa**:  

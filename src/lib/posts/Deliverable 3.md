@@ -159,7 +159,7 @@ services:
 volumes:
   influxdb_data:
 ```
-// đoạn code
+
 
 Chú thích: `api`, `view` và `request` là các dịch vụ xử lý API, hiển thị dữ liệu, và gửi yêu cầu tương ứng. `nginx` đóng vai trò là reverse proxy, phân phối lưu lượng đến các ứng dụng backend. `app-1`, `app-2`, `app-3` là các ứng dụng backend xử lý yêu cầu. `influxdb` là cơ sở dữ liệu thời gian thực để lưu trữ và phân tích dữ liệu request.
 
@@ -207,7 +207,7 @@ app.post('/log', (req, res) => {
   res.sendStatus(200);
 });
 ```
-// đoạn code
+
 
 Chú thích: Sử dụng thư viện InfluxDB client để gửi dữ liệu dạng Point với tag app và trường count. API /log nhận dữ liệu từ các ứng dụng backend và ghi vào InfluxDB.
 
@@ -235,7 +235,7 @@ Giao diện người dùng cho phép gửi nhiều yêu cầu đến hệ thốn
   });
 </script>
 ```
-// đoạn code
+
 
 Chú thích: Form cho phép người dùng nhập URL và số lượng request muốn gửi. Script JavaScript gửi các request đến URL đã nhập để kiểm tra hệ thống.
 
@@ -259,7 +259,7 @@ app.get('/data', async (req, res) => {
   res.json(data);
 });
 ```
-// đoạn code
+
 Chú thích: Truy vấn dữ liệu từ InfluxDB trong khoảng thời gian 1 giờ gần nhất. API /data trả về dữ liệu JSON để hiển thị trên giao diện người dùng.
 
 

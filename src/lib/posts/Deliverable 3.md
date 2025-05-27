@@ -5,137 +5,97 @@ updated: "2025-05-25"
 categories:
   - "sveltekit"
   - "markdown"
-excerpt: Deliverable 2
+excerpt: Deliverable 3
 ---
-Deliverable 3
+
 
 # Phần 1: Tóm tắt tiến độ dự án
 
-## Các tính năng chính đã triển khai:
+## 1. Mục tiêu
+Dự án xây dựng một hệ thống phân tán sử dụng mô hình microservices, triển khai bằng Docker. Mục tiêu chính là:
 
-- **Ghi log phân tán**:  
-  Mỗi ứng dụng Node.js đã ghi log thành công vào các node InfluxDB riêng biệt, bao gồm các thông tin như: tên app, endpoint, mã trạng thái, thời gian phản hồi, request ID.
+- Xử lý và ghi nhận log từ nhiều ứng dụng web.
+- Phân phối tải bằng NGINX Load Balancer.
+- Lưu trữ dữ liệu log vào các cơ sở dữ liệu phân tán (InfluxDB).
+- Hiển thị dữ liệu tổng hợp thông qua giao diện Dashboard.
 
-- **Tổng hợp dữ liệu từ nhiều node**:  
-  Sử dụng module `aggregator.js` để gom dữ liệu log từ nhiều InfluxDB lại thành một mảng duy nhất.
+## 2. Các tính năng chính đã triển khai
+- Load Balancing: Cân bằng tải các request đến 3 ứng dụng web Node.js bằng NGINX.
+- Ghi log dữ liệu: Mỗi ứng dụng ghi dữ liệu log vào một cơ sở dữ liệu InfluxDB riêng biệt.
+- Truy xuất dữ liệu tập trung: API Service truy vấn dữ liệu từ nhiều DB và trả kết quả về dashboard.
+- Giao diện Dashboard: Hiển thị dữ liệu tổng hợp cho người dùng cuối.
+- Sinh tải mô phỏng: Sử dụng công cụ Request Generator để kiểm thử hệ thống dưới tải lớn.
 
-- **API trả log tổng hợp**:  
-  Endpoint `/api/logs` đã hoạt động ổn định, cung cấp dữ liệu log tổng hợp cho frontend hoặc các dịch vụ khác.
+## 3. Trạng thái các thành phần
 
-- **Dashboard hiển thị log**:  
-  Giao diện HTML đơn giản được xây dựng để hiển thị bảng log trực tiếp từ dữ liệu API.
+| Thành phần             | Trạng thái     | Ghi chú ngắn gọn                                  |
+|------------------------|----------------|--------------------------------------------------|
+| Docker Compose setup   | Hoàn thành     | Kết nối các container và cấu hình mạng           |
+| NGINX Load Balancer    | Hoàn thành     | Phân phối lưu lượng đến các ứng dụng             |
+| App Web (1, 2, 3 - Node.js) | Hoàn thành | Xử lý và gửi dữ liệu log đến InfluxDB           |
+| InfluxDB (1, 2, 3)     | Hoàn thành     | Lưu log từ các app web tương ứng                 |
+| API Service            | Hoàn thành     | Tổng hợp dữ liệu từ 3 DB                         |
+| Dashboard (View)       | Hoàn thành     | Hiển thị dữ liệu từ API Service                  |
+| Request Generator      | Hoàn thành     | Tạo tải để kiểm thử                              |
+| Kiểm thử toàn hệ thống | Đang thực hiện | Đang đánh giá hiệu năng và độ ổn định           |
 
----
+## 4. Khó khăn & cách khắc phục
+- Lỗi giao tiếp giữa các container Docker  
+  → Đã xử lý bằng cách cấu hình Docker Compose với mạng dùng chung (`network: bridge`).
 
-## Tiến độ công việc:
+- Dữ liệu log không đồng nhất  
+  → Đã thống nhất định dạng log trong các ứng dụng Node.js để dễ xử lý khi tổng hợp.
 
-| Hạng mục | Tình trạng |
-|----------|------------|
-| Ghi log vào InfluxDB từ Node.js | Đã hoàn thành |
-| Kết nối và tổng hợp log từ nhiều node | Đã hoàn thành |
-| API cung cấp dữ liệu log tổng hợp | Đã hoàn thành |
-| Giao diện hiển thị dữ liệu | Đã hoàn thành |
-| Retry khi lỗi mạng hoặc DB | Đang xử lý |
-| Phân mảnh hoặc sao chép dữ liệu | Dự kiến tích hợp |
-| Bảo mật API bằng token | Chưa thực hiện |
-
----
-
-## Vấn đề đã gặp & hướng giải quyết:
-
-1. **Trễ khi tổng hợp log từ nhiều node**
-   - *Vấn đề*: Một số node phản hồi chậm làm chậm toàn bộ hệ thống.
-   - *Cách xử lý*: Dùng `Promise.all` để tăng tốc độ truy vấn đồng thời.
-
-2. **Không đồng nhất cấu trúc log giữa các node**
-   - *Vấn đề*: Dữ liệu bị thiếu field hoặc sai kiểu.
-   - *Cách xử lý*: Chuẩn hóa schema trước khi ghi vào DB và khi hiển thị.
-
-3. **Lỗi xác thực khi kết nối InfluxDB**
-   - *Vấn đề*: Cấu hình sai token hoặc URL.
-   - *Cách xử lý*: Kiểm tra `.env`, thêm cơ chế kiểm tra cấu hình trước khi khởi động app.
-
----
-
-## Kết luận ngắn gọn:
-
-Dự án đã hoàn thành phần lớn chức năng cốt lõi.  
-Hệ thống có thể ghi log phân tán, tổng hợp và hiển thị dữ liệu real-time.  
-Nhóm đang tập trung vào việc cải tiến độ ổn định, bảo mật và mở rộng khả năng xử lý trong giai đoạn tiếp theo.
+- Dashboard không hiển thị đúng dữ liệu  
+  → Đã sửa API Service để đảm bảo định dạng dữ liệu đúng khi truy xuất từ nhiều DB.
 
 
 # Phần 2: demo hệ thống
 
----
+# Demo hoạt động của hệ thống
 
-## 1. Ghi log từ ứng dụng Node.js lên InfluxDB
+Để minh họa cho hoạt động của hệ thống, em đã xây dựng một môi trường ảo sử dụng Docker gồm nhiều container hoạt động cùng nhau. Hệ thống bao gồm các thành phần: `api`, `view`, `request`, `nginx`, và các app thành phần (`app-1`, `app-2`, `app-3`). Dưới đây là mô tả hoạt động chính kèm ảnh chụp giao diện minh họa:
 
-### Mục đích demo
-Hiển thị quá trình ứng dụng Node.js nhận request, xử lý, rồi ghi thông tin log (tên app, endpoint, status, response time, request ID) lên cơ sở dữ liệu InfluxDB.
+## 1. Giao diện tổng quan Docker Compose
 
-### Hình ảnh/Video minh họa _(chèn tại đây)_
+Giao diện hiển thị toàn bộ các container đang chạy của hệ thống. Mỗi thành phần như `api`, `view`, `request`, `nginx` và các app thành phần đều được container hóa với cổng kết nối cụ thể, ví dụ:
+- `api`: cổng 3004
+- `view`: cổng 3005
+- `request`: cổng 3006  
+- v.v...
+![docker ](/images/docker.png)
+## 2. Giao diện chính của hệ thống SPA (Nginx)
 
-> Gợi ý:
-> - Ảnh chụp màn hình terminal hoặc console đang chạy Node.js, có log in ra thời gian xử lý request.
-> - Ảnh dashboard InfluxDB thể hiện các điểm dữ liệu mới (measurement “request_logs”).
-> - Video quay quá trình gửi request bằng Postman/curl và log xuất hiện trong InfluxDB.
+Giao diện chính được truy cập tại `localhost:8080`, hiển thị trang chủ của Spa Star Group
+Giao diện được phục vụ bởi dịch vụ Nginx làm reverse proxy, điều hướng đến các service phía sau.
+![nginx ](/images/nginx.png)
+## 3. Giao diện tạo request (Thành phần request)
 
-### Mô tả minh họa
-“Khi client gửi request tới `/api/data`, server Node.js sẽ xử lý và ghi lại log vào InfluxDB với các thông tin chi tiết như: tên ứng dụng, endpoint được gọi, mã trạng thái HTTP, thời gian phản hồi và một ID duy nhất cho request.”
+Tại `localhost:3006`, người dùng có thể tạo một số lượng request đến một domain cụ thể — trong trường hợp này là `http://nginx:80`. 
+Mục đích:
+- Kiểm tra tải
+- Quan sát phản ứng của hệ thống khi có nhiều truy cập đồng thời
+![request ](/images/request.png)
 
----
+## 4. Giao diện hiển thị dữ liệu (Thành phần view)
 
-## 2. Tổng hợp dữ liệu log từ nhiều node InfluxDB
+Tại địa chỉ `localhost:3005`, giao diện biểu đồ hiển thị thông tin xử lý hoặc thống kê số lượng request theo thời gian.
 
-### Mục đích demo
-Minh họa cách hệ thống đồng thời truy vấn log từ 3 node InfluxDB khác nhau rồi gộp chung thành một bộ dữ liệu duy nhất.
+Đây là công cụ trực quan giúp theo dõi:
+- Hoạt động của hệ thống
+- Hiệu suất thực tế
+![view](/images/view.png)
 
-### Hình ảnh/Video minh họa _(chèn tại đây)_
+## 5. Giao diện truy vấn dữ liệu bằng InfluxDB Data Explorer
 
-> Gợi ý:
-> - Ảnh chụp code trong `aggregator.js` gọi song song 3 node.
-> - Bảng hoặc biểu đồ hiển thị log lấy từ từng node rồi hợp nhất.
-> - Video demo terminal chạy `aggregateData()` và kết quả log trả về.
+Thông qua InfluxDB, hệ thống lưu trữ và truy vấn các dữ liệu thời gian thực.
 
-### Mô tả minh họa
-“Hệ thống gọi song song 3 node InfluxDB để lấy dữ liệu log phân tán, rồi gộp lại thành một mảng duy nhất. Giúp tổng hợp dữ liệu nhanh và hiệu quả, đảm bảo không bị trễ hoặc thiếu sót.”
+Giao diện Data Explorer cho phép:
 
----
-
-## 3. API trả về dữ liệu log tổng hợp
-
-### Mục đích demo
-Trình bày hoạt động của API `/api/logs` trả về toàn bộ log đã tổng hợp cho frontend hoặc các dịch vụ khác.
-
-### Hình ảnh/Video minh họa _(chèn tại đây)_
-
-> Gợi ý:
-> - Ảnh giao diện Postman gọi API `/api/logs` và JSON log trả về.
-> - Screenshot console backend khi API được gọi.
-> - Video trình duyệt gọi API `/api/logs` và xem dữ liệu log.
-
-### Mô tả minh họa
-“API `/api/logs` sẽ nhận yêu cầu từ client, gọi hàm tổng hợp dữ liệu từ các node, rồi trả về toàn bộ log đã hợp nhất dưới dạng JSON.”
-
----
-
-## 4. Dashboard hiển thị dữ liệu log
-
-### Mục đích demo
-Trình bày giao diện người dùng (frontend) gọi API để hiển thị log trong bảng, giúp người dùng dễ dàng xem và theo dõi dữ liệu log phân tán.
-
-### Hình ảnh/Video minh họa _(chèn tại đây)_
-
-> Gợi ý:
-> - Ảnh chụp màn hình trang web dashboard hiển thị bảng log.
-> - Video quay thao tác tải lại trang, bảng log tự động cập nhật.
-> - GIF minh họa các dòng log được thêm vào liên tục.
-
-### Mô tả minh họa
-“Dashboard đơn giản này sử dụng fetch API để gọi endpoint `/api/logs`, nhận dữ liệu log dạng JSON và hiển thị lên bảng. Người dùng có thể theo dõi thông tin realtime của các request trên nhiều node.”
-
----
-
+- Truy vấn các bucket dữ liệu với loại dữ liệu `web-requests`
+- Lọc và trực quan hóa dữ liệu
+- Xuất dữ liệu ra CSV để phân tích thêm
+![influxdb](/images/influxdb.png)
 # Phân 3:  Mã nguồn (Code Snippets)
 
 ## 1. Ghi log vào InfluxDB từ ứng dụng Node.js  

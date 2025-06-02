@@ -64,7 +64,7 @@ Hệ thống web hiện đại thường được triển khai theo mô hình ph
 ## 1. Mô Hình Kiến Trúc
 
 Hệ thống được triển khai dưới dạng microservices với các thành phần chính sau, đóng gói trong Docker Container và điều phối bởi Docker Compose:
-![mohinhkientruc](/static/images/sodokientruc.png)
+![mohinhkientruc](/images/sodokientruc.png)
 # I. Tổng Quan Dự Án
 
 Hệ thống web hiện đại thường được triển khai theo mô hình phân tán, nhằm mục tiêu mở rộng (scalability), tăng khả năng chịu lỗi (fault tolerance) và đáp ứng lượng người dùng lớn. Một vấn đề đặt ra trong các hệ thống như vậy là giám sát lưu lượng truy cập theo thời gian thực, đặc biệt là trong môi trường có cân bằng tải (load balancing), nơi mỗi máy chủ backend chỉ biết đến một phần lưu lượng.
@@ -667,11 +667,11 @@ document.getElementById("refreshButton").addEventListener("click", () => {
 Phần này trình bày các sơ đồ trực quan hóa cấu trúc và luồng hoạt động của hệ thống.
 
 ## 1. Sơ đồ Kiến trúc Hệ thống
-![mohinhkientruc](/static/images/sodokientruc.png)
+![mohinhkientruc](/images/sodokientruc.png)
 ## 2. Sơ đồ Triển khai
-![sodotrienkhai](/static/images/sodotrienkhai1.png)
+![sodotrienkhai](/images/sodotrienkhai1.png)
 ## 3. Sơ đồ Trình tự
-![sodotrinhtu](/static/images/Sodotrinhtu.png)
+![sodotrinhtu](/images/Sodotrinhtu.png)
 ## 4. Các yêu cầu chức năng
 
 | Nhóm chức năng        | Chức năng                                                | Tác nhân  |
@@ -682,7 +682,7 @@ Phần này trình bày các sơ đồ trực quan hóa cấu trúc và luồng 
 | Xem Dashboard giao diện (view) | Mở Frontend UI để kiểm tra biểu đồ, số liệu cơ bản       |           |
 
 ### 4.1. Sơ đồ Use-case:
-![sodousecase](/static/images/sodousecase.png)
+![sodousecase](/images/sodousecase.png)
 ### 4.2. Đặc tả các Use-case
 #### a. Tạo yêu cầu kiểm thử
 
@@ -694,7 +694,7 @@ Phần này trình bày các sơ đồ trực quan hóa cấu trúc và luồng 
 | **Luồng con** | - Nếu Tester **để trống hoặc nhập sai giá trị** “Số lượng request” (ví dụ: không phải số dương), hệ thống hiển thị **Validation Error** và không cho phép submit. <br> - Nếu Tester nhập **URL sai định dạng** (không phải `http://...`), hệ thống hiển thị lỗi “URL không hợp lệ”. |
 | **Tiền điều kiện** | Giao diện Request đã được build, frontend có thể kết nối backend để gửi request. |
 | **Hậu điều kiện** | Hệ thống đã gửi các HTTP request và ghi nhận kết quả: <ul><li>Thành công / Thất bại</li><li>Thời gian phản hồi</li></ul> Những dữ liệu này được dùng cho đánh giá hiệu năng. |
-![request](/static/images/request.png)
+![request](/images/request.png)
 #### b. Giám sát trạng thái dịch vụ
 
 | Thành phần     | Mô tả |
@@ -705,7 +705,7 @@ Phần này trình bày các sơ đồ trực quan hóa cấu trúc và luồng 
 | **Luồng con** | - Nếu **CPU > 80%** hoặc **RAM > 80%**, hệ thống hiển thị cảnh báo **"⚠ High CPU/RAM"** bên cạnh container đó. <br> - Tester có thể căn cứ vào cảnh báo để quyết định **giảm tải** hoặc **tạm dừng kiểm thử**. |
 | **Tiền điều kiện** | - Các container đã được bật **health check** (trong Docker Compose hoặc Kubernetes). <br> - Tester có quyền truy cập dashboard (như Portainer, Grafana) hoặc CLI (`docker ps`, `docker stats`) để xem trạng thái. |
 | **Hậu điều kiện** | - Tester đã **nắm được trạng thái vận hành** của từng service/container. <br> - Có thể **báo cáo lỗi** cho Admin hoặc **điều chỉnh chiến lược kiểm thử** cho phù hợp. |
-![docker](/static/images/docker.png)
+![docker](/images/docker.png)
 #### c. Xem dữ liệu thô trong InfluxDB
 
 | Thành phần     | Mô tả |
@@ -716,7 +716,7 @@ Phần này trình bày các sơ đồ trực quan hóa cấu trúc và luồng 
 | **Luồng con** | - **Không có dữ liệu**: Nếu phạm vi thời gian query quá ngắn (ví dụ `last 1m`), kết quả trả về là bảng trống. <br> → Tester chỉnh lại thời gian (ví dụ `last 24h`) và chạy lại. |
 | **Tiền điều kiện** | - Các instance InfluxDB (1/2/3) **đang chạy ổn định** và đã cấu hình đầy đủ `bucket`, `retention policy`, và `authentication` (nếu có). <br> - Tester có **tài khoản** hoặc **API Token** để truy cập. <br> - Biết rõ URL kết nối từng InfluxDB:<ul><li>InfluxDB-1: http://influxdb1:8086/</li><li>InfluxDB-2: http://influxdb2:8086/</li><li>InfluxDB-3: http://influxdb3:8086/</li></ul> |
 | **Hậu điều kiện** | - Tester đã **kiểm tra được tính chính xác và định dạng của dữ liệu** ghi vào. <br> - Có cơ sở để xác định lỗi ở phía App ghi dữ liệu, hoặc phát hiện thiếu dữ liệu, phục vụ việc tối ưu hệ thống. |
-![influxdb](/static/images/influxdb.png)
+![influxdb](/images/influxdb.png)
 #### d. Xem Dashboard giao diện (View)
 
 | Thành phần       | Mô tả |
@@ -727,7 +727,7 @@ Phần này trình bày các sơ đồ trực quan hóa cấu trúc và luồng 
 | **Luồng con**    | - Trường hợp **API trả về JSON rỗng** (không có dữ liệu): <br> → Frontend hiển thị thông báo "Không có dữ liệu", hoặc hiển thị dashboard rỗng. <br> → Tester có thể kiểm tra lại thời gian, App đang test, hoặc báo lỗi. |
 | **Tiền điều kiện** | - API Aggregator đang hoạt động ổn định và trả dữ liệu đúng định dạng. <br> - Frontend UI đã được build và host tại địa chỉ `http://<host>:3005`. <br> - Tester có trình duyệt và biết chính xác URL truy cập dashboard. |
 | **Hậu điều kiện** | - Tester đã xem được số liệu hiệu năng một cách **trực quan**. <br> - Có cơ sở để **điều chỉnh kịch bản kiểm thử**, báo cáo lỗi với Admin, hoặc đánh giá khả năng chịu tải của hệ thống. |
-![View](/static/images/view.png)
+![View](/images/view.png)
 
 # V. Phân Tích Vấn Đề và Rủi Ro Tiềm Ẩn
 

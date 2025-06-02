@@ -13,7 +13,7 @@ excerpt: Deliverable 2
 Hệ thống giám sát RPS gồm các thành phần chính: Client (hoặc bộ sinh request), NGINX, ba app Node.js (app-1, app-2, app-3), ba cơ sở dữ liệu InfluxDB, một API tổng hợp và giao diện Frontend. Client hoặc Request Generator gửi request đến NGINX; NGINX đóng vai trò load balancer (sử dụng phương pháp vòng tròn hoặc IP-hash)
 nginx.org để phân phối đều request đến các container Node.js. Mỗi Node.js ghi nhận lưu lượng request (tính RPS) và lưu trữ số liệu vào InfluxDB riêng của nó (xác định bằng biến môi trường NAME). Sau đó, API truy vấn đồng thời ba InfluxDB để tổng hợp dữ liệu RPS trả về cho Frontend.
 
-![sơ đồ trình tự ](/images/sơ%20đồ%20kiến%20trúc%20hệ%20thống.drawio.png)
+![sơ đồ trình tự ](/images/result_sơ%20đồ%20kiến%20trúc%20hệ%20thống.drawio.png) 
 
 
 

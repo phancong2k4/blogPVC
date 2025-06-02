@@ -117,8 +117,7 @@ Hệ thống được triển khai dưới dạng microservices với các thàn
 
 - **Build Tools**:  
   - npm (Node.js)  
-  - pip (Python)  
-
+  
 # III. Phân Tích Chi Tiết Các Thành Phần
 
 ## 1. Request

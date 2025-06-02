@@ -45,32 +45,63 @@ InfluxDB giải quyết bài toán lưu trữ và xử lý dữ liệu thời gi
 ## 7. Kết luận
 InfluxDB là một công cụ mạnh mẽ và linh hoạt cho việc quản lý và phân tích dữ liệu chuỗi thời gian. Tuy nhiên, người dùng cần cân nhắc các hạn chế của nó, đặc biệt khi xử lý dữ liệu phi thời gian hoặc dữ liệu quan hệ phức tạp.
 
-# Đề xuất đề tài: Giám Sát Thời Tiết Đơn Giản với InfluxDB
+# Đề xuất đề tài: Giám sát lượng Request của trang Web 
 
 ## 1. Giới thiệu
-Trong bối cảnh biến đổi khí hậu và thời tiết thay đổi nhanh chóng, việc theo dõi và phân tích dữ liệu thời tiết trở nên quan trọng. Đề tài này tập trung vào việc xây dựng hệ thống giám sát thời tiết đơn giản sử dụng InfluxDB để lưu trữ dữ liệu thời tiết theo thời gian và Grafana để trực quan hóa thông tin.
+Trong ứng dụng web microservices (API, Request Handler, Nginx), biết mỗi giây có bao nhiêu request, endpoint nào “hot” nhất, và khi nào hệ thống ngắc ngoải là cực kỳ cần thiết. Thay vì “đào log” thủ công, ta xây dựng hệ thống giám sát hoàn chỉnh chạy trên Docker, dùng InfluxDB lưu metric, Grafana vẽ biểu đồ—tất cả không cần code Python.
 
 ## 2. Vấn đề cần giải quyết
-Thời tiết là yếu tố ảnh hưởng trực tiếp đến cuộc sống hàng ngày, từ việc lựa chọn trang phục, kế hoạch hoạt động ngoài trời đến các quyết định nông nghiệp. Tuy nhiên, việc theo dõi và phân tích xu hướng thời tiết thường chỉ có trên các nền tảng lớn, và người dùng cá nhân không có hệ thống đơn giản để tự mình theo dõi dữ liệu thời tiết trong khu vực của họ. Đề tài này nhằm xây dựng một hệ thống thu thập và lưu trữ dữ liệu thời tiết từ API thời tiết, giúp người dùng theo dõi và phân tích xu hướng thời tiết theo ngày, tuần.
+- **Log phân tán:**  
+  Nginx, API, Request Handler có log riêng lẻ, khó tổng hợp real-time.
+- **Chưa có time-series DB:**  
+  Không lưu trữ lịch sử request dưới dạng chuỗi thời gian để phân tích xu hướng (RPS, RPM).
+- **Thiếu trực quan:**  
+  Dev/DevOps không có dashboard chung, thường “nhảy container – grep log”, mất thời gian.
+- **Không cảnh báo:**  
+  Khi traffic vượt ngưỡng (ví dụ RPS > 500), không tự động thông báo để scale hay điều chỉnh.
 
 ## 3. Mục tiêu
-- Thu thập dữ liệu thời tiết (nhiệt độ, độ ẩm) từ API thời tiết.
-- Lưu trữ dữ liệu thời gian thực vào cơ sở dữ liệu InfluxDB.
-- Phân tích và theo dõi xu hướng thời tiết theo ngày, tuần.
-- Trực quan hóa dữ liệu thời tiết bằng Grafana để dễ dàng theo dõi.
+- Thu thập metric request từ Nginx (stub_status) và API (Prometheus endpoint) thông qua Telegraf trên Docker.
+- Lưu trữ time-series vào InfluxDB (độ phân giải 10s/1m).
+- Trực quan hóa bằng Grafana:
+  - Biểu đồ RPS tổng (Nginx)
+  - Biểu đồ RPM từng endpoint (`/login`, `/products`, …)
+  - Top 5 endpoint “hot”
+- Alerting: Khi RPS hoặc RPM vượt ngưỡng → gửi email/Slack.
 
 ## 4. Phạm vi
-- Thu thập dữ liệu từ API thời tiết (như OpenWeather API, WeatherAPI).
-- Lưu trữ thông tin thời tiết như nhiệt độ, độ ẩm, thời gian.
-- Xây dựng giao diện trực quan hóa trên Grafana.
-- Hệ thống đơn giản, phục vụ mục đích học tập và nghiên cứu.
+- **Thu thập:**
+  - Nginx: bật `stub_status` → Telegraf pull metric.
+  - API Service (Node.js/Express hoặc Flask): expose `/metrics` chuẩn Prometheus → Telegraf pull.
+- **Lưu trữ:**  
+  InfluxDB (container), retention policy 30 ngày.
+- **Trực quan:**  
+  Grafana (container) dùng data source InfluxDB.
+- **Alert:**  
+  Grafana Alerting (email/Slack).
+- **Không bao gồm:**  
+  Giám sát CPU/RAM, auto-scaling.
 
 ## 5. Công nghệ sử dụng
-- **InfluxDB:** Lưu trữ dữ liệu chuỗi thời gian (time-series data).
-- **Python:** Thu thập dữ liệu từ API thời tiết, xử lý và lưu vào InfluxDB.
-- **Grafana:** Trực quan hóa dữ liệu thời tiết từ InfluxDB.
+- **Docker & Docker Compose:** Quản lý đồng thời các container:
+  1. Nginx Reverse Proxy  
+  2. API Service (Node.js/Express – expose `/metrics`)  
+  3. InfluxDB OSS  
+  4. Telegraf (inputs: `nginx`, `prometheus`; output: InfluxDB)  
+  5. Grafana OSS
+- **Telegraf:** Thu thập metric Nginx và API, đẩy vào InfluxDB.
+- **InfluxDB:** Lưu trữ metric time-series (measurement: `web_requests`, tags: `service`, `endpoint`, fields: `count`/`request_rate`).
+- **Grafana:** Tạo dashboard (RPS, RPM, top endpoint), cấu hình alert.
 
 ## 6. Kỳ vọng kết quả
-- Hệ thống có thể thu thập và lưu trữ dữ liệu thời tiết liên tục.
-- Giao diện trực quan trên Grafana thể hiện xu hướng thời tiết (nhiệt độ, độ ẩm) theo ngày, tuần.
-- Người dùng có thể dễ dàng theo dõi và phân tích thông tin thời tiết.
+- **Data flow tự động:**  
+  Telegraf pull mỗi 10–15s, InfluxDB lưu, Grafana hiển thị.
+- **Dashboard trực quan:**  
+  - RPS tổng (Nginx)  
+  - RPM cho `/login`, `/register`, `/products`, `/orders`  
+  - Top 5 endpoint “hot”
+- **Alerting:** Gửi email/Slack khi:
+  - RPS tổng > 500 (1 phút)
+  - RPM `/login` > 300 (5 phút)
+- **Lịch sử 30 ngày:**  
+  Retention policy để phân tích xu hướng hàng tuần/tháng.

@@ -416,7 +416,8 @@ volumes:
   - Mỗi client được khởi với `token`, `url` và `bucket` tương ứng (`metrics1`, `metrics2`, `metrics3`).
   - Thực hiện các truy vấn Flux thông qua module `query.js`.
   - Tệp multInfluxClient.js export ba client riêng biệt, ví dụ:
-  ```javascript
+
+```js
 // multInfluxClient.js
 const { InfluxDB } = require("@influxdata/influxdb-client");
 
@@ -440,4 +441,242 @@ module.exports = {
   client3
 };
 ```
+- **Docker**  
+  - Dockerfile trong `aggregator/` xây dựng image chứa Node.js, cài dependencies từ `package.json`, rồi khởi `node server.js`.  
+  - Trong `docker-compose.yml`, khối service có thể như:
+```yaml
+aggregator:
+  build: ./aggregator
+  container_name: api-aggregator
+  ports:
+    - "5000:5000"
+  environment:
+    - PORT=5000
+    - INFLUX_URL_1=http://influxdb-1:8086
+    - INFLUX_TOKEN_1=${INFLUX_TOKEN_1}
+    - INFLUX_ORG_1=${INFLUX_ORG}
+    - INFLUX_BUCKET_1=metrics1
+    - INFLUX_URL_2=http://influxdb-2:8086
+    - INFLUX_TOKEN_2=${INFLUX_TOKEN_2}
+    - INFLUX_ORG_2=${INFLUX_ORG}
+    - INFLUX_BUCKET_2=metrics2
+    - INFLUX_URL_3=http://influxdb-3:8086
+    - INFLUX_TOKEN_3=${INFLUX_TOKEN_3}
+    - INFLUX_ORG_3=${INFLUX_ORG}
+    - INFLUX_BUCKET_3=metrics3
+  depends_on:
+    - influxdb1
+    - influxdb2
+    - influxdb3
+```
+- Khi container chạy, Express sẽ tự động lắng nghe cổng 5000, sẵn sàng trả dữ liệu khi có request từ UI.
 
+## Cấu hình cơ bản
+1. **config.json hoặc Biến môi trường**
+- Nếu dùng `config.json` (nằm trong `aggregator/`), nội dung có thể:
+```js
+{
+  "influxdb": [
+    {
+      "name": "db1",
+      "url": "http://influxdb-1:8086",
+      "org": "my-org",
+      "bucket": "metrics1",
+      "tokenEnv": "INFLUX_TOKEN_1"
+    },
+    {
+      "name": "db2",
+      "url": "http://influxdb-2:8086",
+      "org": "my-org",
+      "bucket": "metrics2",
+      "tokenEnv": "INFLUX_TOKEN_2"
+    },
+    {
+      "name": "db3",
+      "url": "http://influxdb-3:8086",
+      "org": "my-org",
+      "bucket": "metrics3",
+      "tokenEnv": "INFLUX_TOKEN_3"
+    }
+  ],
+  "query": "from(bucket: \"BUCKET\") |> range(start: -1h) |> mean(column: \"duration_ms\")"
+}
+```
+- Ở `server.js`, sẽ `require("./config.json")` rồi lặp qua `config.influxdb` để khởi client và xây flux query riêng cho mỗi bucket.  
+- Hoặc bạn có thể không dùng `config.json` mà trực tiếp parse biến ENV (như ví dụ Docker Compose) để gán vào `multInfluxClient.js` và `query.js`.
+
+### 2. Cách gọi & Tham số tùy chọn
+- Frontend chỉ cần:
+```js
+fetch("http://<HOST_AGGREGATOR>:5000/api/metrics")
+  .then(res => res.json())
+  .then(data => {
+    // data.db1, data.db2, data.db3
+  });
+```
+- Nếu muốn cho phép query động (ví dụ time range do client chỉ định), có thể thêm query parameters:
+```js
+app.get("/api/metrics", async (req, res) => {
+  const { from = "-1h", measurement = "request_metrics" } = req.query;
+  const fluxQuery = `from(bucket:"BUCKET") |> range(start: ${from}) |> mean(column:"duration_ms")`;
+  // Thay BUCKET tương ứng trước khi gọi fetchMetrics()
+  ...
+});
+```
+## Vai trò & Phân tích
+
+- **Ẩn chi tiết multi-source**  
+  Frontend UI (dashboard) chỉ phải thực hiện 1 HTTP request đến Aggregator, thay vì gọi đan xen 3 API InfluxDB khác nhau, parse rồi gộp dữ liệu. Điều này làm giảm độ phức tạp phía client và giảm tổng số kết nối ra mạng.
+
+- **Giảm tải cho InfluxDB**  
+  Với caching (nếu implement thêm), Aggregator có thể lưu giữ kết quả cache trong bộ nhớ (ví dụ Redis hoặc in-memory) trong khoảng thời gian ngắn (cache TTL). Khi UI gọi lại trong TTL, Aggregator trả dữ liệu cũ, tránh query liên tục. Nhờ vậy, InfluxDB không phải phục vụ cùng một câu query lặp đi lặp lại.
+
+- **Khả năng mở rộng**  
+  Khi thêm nguồn mới (ví dụ InfluxDB-4), chỉ cần thêm vào `config.json` mục tương ứng (url, bucket, tokenEnv) và khởi thêm client trong `multInfluxClient.js`. Không phải chỉnh lại logic core trong `server.js`, chỉ lặp qua danh sách nguồn động.  
+  Nếu cần xử lý dữ liệu lớn (hàng trăm ngàn điểm), nên mở rộng thành microservice có thể scale-out (chạy nhiều replica), kết hợp với Kafka/Redis Streams để pre-process dữ liệu (tính toán off-line), sau đó trả về kết quả gọn hơn cho UI.
+
+## 6. View
+
+**Chức năng:**  
+Phần giao diện là ứng dụng phía khách hàng (client) chịu trách nhiệm lấy dữ liệu từ API Aggregator và trình bày cho người dùng dưới dạng đồ thị, bảng, dashboard hoặc các thành phần tương tác khác. Khi người dùng truy cập vào URL của Frontend, trình duyệt sẽ tải file HTML/JS/CSS tương ứng (ví dụ: `chart.html`, `chart.js`), sau đó thực hiện các bước:
+
+1. Gửi request đến API Aggregator (mặc định `http://aggregator:5000/api/metrics`) để lấy dữ liệu thời gian thực hoặc dữ liệu lịch sử (tùy vào cấu hình).
+2. Nhận JSON trả về dạng:
+```js
+{
+  "db1": { "avg_duration": 120, "count": 934 },
+  "db2": { "avg_duration": 145, "count": 1021 },
+  "db3": { "avg_duration": 98,  "count": 887 },
+  "timestamp": "2025-06-01T10:00:00Z"
+}
+```
+3. Xử lý dữ liệu (mapping, lọc, chuyển đổi format nếu cần) – do chart.js đảm nhiệm.  
+4. Vẽ đồ thị (chart) bằng thư viện Chart.js hoặc D3.js (tùy cấu hình trong chart.js), hiển thị số liệu (hiệu năng, throughput, latency) dưới dạng biểu đồ đường, biểu đồ cột, v.v.
+
+## Công nghệ
+
+- **HTML / CSS / JavaScript**  
+  - File chính `chart.html` (HTML5 + CSS cơ bản) để định nghĩa khung hiển thị, thẻ `<canvas>` cho Chart.js.  
+  - Tập `chart.js` (ES6 hoặc ES5) chịu trách nhiệm:
+  - Gọi API Aggregator (thông qua `fetch()` hoặc `axios.get()`).
+ - Xử lý kết quả JSON trả về (map lên mảng data, array of labels, etc.).
+ - Khởi tạo Chart.js:
+
+```js
+// Ví dụ pseudo-code:
+const ctx = document.getElementById("myChart").getContext("2d");
+const myChart = new Chart(ctx, {
+  type: "line",
+  data: {
+    labels: timeLabels,          // ["10:00", "10:01", ...]
+    datasets: [
+      {
+        label: "App-1 Avg Duration (ms)",
+        data: durationsDb1,       // [120, 118, ...]
+        borderColor: "rgb(75, 192, 192)",
+        fill: false
+      },
+      {
+        label: "App-2 Avg Duration (ms)",
+        data: durationsDb2,
+        borderColor: "rgb(255, 99, 132)",
+        fill: false
+      },
+      {
+        label: "App-3 Avg Duration (ms)",
+        data: durationsDb3,
+        borderColor: "rgb(54, 162, 235)",
+        fill: false
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { display: true, title: { text: "Time", display: true } },
+      y: { display: true, title: { text: "Avg Duration (ms)", display: true } }
+    }
+  }
+});
+```
+- Chart.js (đã cài qua package.json): thư viện vẽ biểu đồ đơn giản, hỗ trợ nhiều loại đồ thị (line, bar, pie, v.v.), dễ cấu hình.
+- Express.js (nếu server.js dùng Express) hoặc http-server (nếu chỉ serve static mà không cần tùy chỉnh route).
+
+- React.js / Vue.js / Angular (nếu dự án mở rộng)
+
+Mặc dù folder hiện tại chỉ có HTML + JS thuần với Chart.js, bạn có thể chuyển sang React (hoặc Vue, Angular) để xây dựng SPA, ví dụ:
+- Cài create-react-app, viết component `<Dashboard />`, `<Chart />`, `<FilterPanel />`
+- Sử dụng Chart.js qua react-chartjs-2 hoặc D3.js.
+- Quản lý state bằng Context API, Redux, hoặc Vuex (với Vue).
+- Build ra bundle tĩnh (`npm run build`) và serve bằng NGINX static.
+
+## Cấu hình cơ bản
+
+1. **API Endpoint**
+
+   - Trong file `chart.js`, mặc định URL của Aggregator có thể khai báo:
+     ```js
+     const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api/metrics";
+     ```
+   - Nếu không dùng React, bạn có thể để thẳng:
+     ```js
+     const API_URL = "http://aggregator:5000/api/metrics";
+     ```
+   - Khi chạy container, truyền biến môi trường `REACT_APP_API_URL` hoặc `API_URL` (tuỳ cách implement) để UI biết gọi đúng địa chỉ backend.
+
+2. **Port & Hosting**
+
+   - Trong `server.js`, UI lắng nghe port `PORT` (mặc định 3000). Có thể override bằng biến môi trường `PORT=4000`.
+   - Nếu build static và serve qua NGINX, UI sẽ lắng nghe port 80 trong container, ánh xạ ra host tuỳ ý.
+
+3. **Tham số tương tác (filter, time range)**
+
+- `chart.html` có thể chứa form hoặc dropdown:
+```html
+<label>Chọn khoảng thời gian:</label>
+<select id="timeRange">
+  <option value="-1h">Last 1h</option>
+  <option value="-6h">Last 6h</option>
+  <option value="-24h">Last 24h</option>
+</select>
+<button id="refreshButton">Refresh</button>
+```
+- Trong chart.js, lắng nghe sự kiện change của dropdown và click của button để gọi lại API với query parameter:
+```js
+const timeRangeSelect = document.getElementById("timeRange");
+
+document.getElementById("refreshButton").addEventListener("click", () => {
+  const from = timeRangeSelect.value;
+  fetch(`${API_URL}?from=${encodeURIComponent(from)}`)
+    .then((res) => res.json())
+    .then((data) => updateChart(data))
+    .catch((err) => showError(err));
+});
+```
+# Vai trò & Phân tích
+
+- **Điểm tiếp xúc duy nhất cho người dùng**
+  - Frontend đóng vai trò hiển thị toàn bộ dashboard: biểu đồ thời gian thực, số liệu tổng hợp, bảng phân tích chi tiết. Người dùng chỉ cần mở một URL (ví dụ: `http://ui-host:3000/`) để xem toàn bộ số liệu mà không cần biết backend phức tạp.
+  - Khi có nhiều người dùng truy cập, các file tĩnh (HTML/JS/CSS) hoàn toàn có thể phân tán qua CDN hoặc nhiều instance web server, giúp tăng khả năng chịu tải (scale-out).
+
+- **Tách biệt với backend**
+  - UI hoàn toàn độc lập so với API Aggregator và các service phía sau. Lần deploy UI mới chỉ cần build lại file tĩnh và reload container/nginx, không ảnh hưởng đến API hoặc database.
+  - Nếu muốn thay đổi giao diện (chuyển từ Chart.js sang D3.js, hoặc đổi layout), chỉ cần chỉnh `chart.html`/`chart.js` hoặc code React; backend không cần sửa.
+# IV. Các Sơ Đồ Chính Của Hệ Thống
+
+Phần này trình bày các sơ đồ trực quan hóa cấu trúc và luồng hoạt động của hệ thống.
+
+## 1. Sơ đồ Kiến trúc Hệ thống
+![mohinhkientruc](/images/sodokientruc.drawio%20(1).png)
+## 2. Sơ đồ Triển khai
+![sodotrienkhai](/static/images/sodotrienkhai1.txt.drawio.png)
+## 3. Các yêu cầu chức năng
+
+| Nhóm chức năng        | Chức năng                                                | Tác nhân  |
+|----------------------|---------------------------------------------------------|-----------|
+| Sinh tải kiểm thử     | Gửi các HTTP request đến NGINX để kiểm tra hiệu năng    | Tester    |
+| Giám sát trạng thái dịch vụ | Theo dõi tình trạng (health) của các service (App-1/2/3, InfluxDB-1/2/3) |           |
+| Xem dữ liệu thô InfluxDB | Truy vấn trực tiếp vào InfluxDB (qua giao diện Data Explorer) để xem dữ liệu chưa tổng hợp |           |
+| Xem Dashboard giao diện (view) | Mở Frontend UI để kiểm tra biểu đồ, số liệu cơ bản       |           |
+
+### 3.1. Sơ đồ Use-case:

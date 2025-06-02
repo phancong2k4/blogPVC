@@ -669,7 +669,7 @@ Phần này trình bày các sơ đồ trực quan hóa cấu trúc và luồng 
 ## 1. Sơ đồ Kiến trúc Hệ thống
 ![mohinhkientruc](/images/sodokientruc.drawio%20(1).png)
 ## 2. Sơ đồ Triển khai
-![sodotrienkhai](/static/images/sodotrienkhai1.txt.drawio.png)
+![sodotrienkhai](/images/sodotrienkhai1.txt.drawio.png)
 ## 3. Các yêu cầu chức năng
 
 | Nhóm chức năng        | Chức năng                                                | Tác nhân  |

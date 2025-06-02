@@ -30,9 +30,10 @@ III. Phân Tích Chi Tiết Các Thành Phần
 IV. Các Sơ Đồ Chính Của Hệ Thống
 1. Sơ đồ Kiến trúc Hệ thống
 2. Sơ đồ Triển khai
-3. Các yêu cầu chức năng
-   3.1. Sơ đồ Use-case
-   3.3. Đặc tả các Use-case
+3. Sơ đồ Trình tự
+4. Các yêu cầu chức năng
+   - 4.1. Sơ đồ Use-case
+   - 4.2. Đặc tả các Use-case
 
 V. Phân Tích Vấn Đề và Các Rủi Ro Tiềm Ẩn
 1. Vấn Đề Hiện Tại

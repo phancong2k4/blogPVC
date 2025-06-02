@@ -8,8 +8,8 @@ categories:
 excerpt: Deliverable 4
 ---
 
-Lê Đưc Long - 23010016 - 23010016@st.phenikaa-uni.edu.vn
-Phan Văn Công -	22010158 - 22010158@st.phenikaa-uni.edu.vn
+- Lê Đưc Long - 23010016 - 23010016@st.phenikaa-uni.edu.vn
+- Phan Văn Công -	22010158 - 22010158@st.phenikaa-uni.edu.vn
 
 # MỤC LỤC
 

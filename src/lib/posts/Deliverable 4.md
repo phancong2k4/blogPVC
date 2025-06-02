@@ -64,7 +64,7 @@ Hệ thống web hiện đại thường được triển khai theo mô hình ph
 ## 1. Mô Hình Kiến Trúc
 
 Hệ thống được triển khai dưới dạng microservices với các thành phần chính sau, đóng gói trong Docker Container và điều phối bởi Docker Compose:
-![mohinhkientruc](/images/sodokientruc.png)
+![mohinhkientruc](/static/images/sodokientruc.png)
 # I. Tổng Quan Dự Án
 
 Hệ thống web hiện đại thường được triển khai theo mô hình phân tán, nhằm mục tiêu mở rộng (scalability), tăng khả năng chịu lỗi (fault tolerance) và đáp ứng lượng người dùng lớn. Một vấn đề đặt ra trong các hệ thống như vậy là giám sát lưu lượng truy cập theo thời gian thực, đặc biệt là trong môi trường có cân bằng tải (load balancing), nơi mỗi máy chủ backend chỉ biết đến một phần lưu lượng.
@@ -667,9 +667,9 @@ document.getElementById("refreshButton").addEventListener("click", () => {
 Phần này trình bày các sơ đồ trực quan hóa cấu trúc và luồng hoạt động của hệ thống.
 
 ## 1. Sơ đồ Kiến trúc Hệ thống
-![mohinhkientruc](/images/sodokientruc.png)
+![mohinhkientruc](/static/images/sodokientruc.png)
 ## 2. Sơ đồ Triển khai
-![sodotrienkhai](/images/sodotrienkhai1.png)
+![sodotrienkhai](/static/images/sodotrienkhai1.png)
 ## 3. Sơ đồ Trình tự
 ![sodotrinhtu](/static/images/Sodotrinhtu.png)
 ## 4. Các yêu cầu chức năng
@@ -682,7 +682,7 @@ Phần này trình bày các sơ đồ trực quan hóa cấu trúc và luồng 
 | Xem Dashboard giao diện (view) | Mở Frontend UI để kiểm tra biểu đồ, số liệu cơ bản       |           |
 
 ### 4.1. Sơ đồ Use-case:
-![sodousecase](/images/sodousecase.drawio%20(1).png)
+![sodousecase](/static/images/sodousecase.png)
 ### 4.2. Đặc tả các Use-case
 #### a. Tạo yêu cầu kiểm thử
 
@@ -694,3 +694,206 @@ Phần này trình bày các sơ đồ trực quan hóa cấu trúc và luồng 
 | **Luồng con** | - Nếu Tester **để trống hoặc nhập sai giá trị** “Số lượng request” (ví dụ: không phải số dương), hệ thống hiển thị **Validation Error** và không cho phép submit. <br> - Nếu Tester nhập **URL sai định dạng** (không phải `http://...`), hệ thống hiển thị lỗi “URL không hợp lệ”. |
 | **Tiền điều kiện** | Giao diện Request đã được build, frontend có thể kết nối backend để gửi request. |
 | **Hậu điều kiện** | Hệ thống đã gửi các HTTP request và ghi nhận kết quả: <ul><li>Thành công / Thất bại</li><li>Thời gian phản hồi</li></ul> Những dữ liệu này được dùng cho đánh giá hiệu năng. |
+![request](/static/images/request.png)
+#### b. Giám sát trạng thái dịch vụ
+
+| Thành phần     | Mô tả |
+|----------------|------|
+| **Mô tả**      | Cho phép **Tester** theo dõi **tình trạng (health status)** của các container: `App-1`, `App-2`, `App-3`, `InfluxDB-1`, `InfluxDB-2`, `InfluxDB-3`. Từ đó, Tester biết container nào đang chạy, đang lỗi (crash), hoặc gặp sự cố tài nguyên. |
+| **Tác nhân**   | Tester |
+| **Luồng chính** | - Hệ thống hiển thị **Danh sách container** kèm theo các thông tin:<ul><li>Tên container: `App-1`, `App-2`, `App-3`, `InfluxDB-1`, `InfluxDB-2`, `InfluxDB-3`</li><li>Trạng thái: `Running`, `Exited`, `Restarting`, `Error`</li></ul> |
+| **Luồng con** | - Nếu **CPU > 80%** hoặc **RAM > 80%**, hệ thống hiển thị cảnh báo **"⚠ High CPU/RAM"** bên cạnh container đó. <br> - Tester có thể căn cứ vào cảnh báo để quyết định **giảm tải** hoặc **tạm dừng kiểm thử**. |
+| **Tiền điều kiện** | - Các container đã được bật **health check** (trong Docker Compose hoặc Kubernetes). <br> - Tester có quyền truy cập dashboard (như Portainer, Grafana) hoặc CLI (`docker ps`, `docker stats`) để xem trạng thái. |
+| **Hậu điều kiện** | - Tester đã **nắm được trạng thái vận hành** của từng service/container. <br> - Có thể **báo cáo lỗi** cho Admin hoặc **điều chỉnh chiến lược kiểm thử** cho phù hợp. |
+![docker](/static/images/docker.png)
+#### c. Xem dữ liệu thô trong InfluxDB
+
+| Thành phần     | Mô tả |
+|----------------|------|
+| **Mô tả**      | Cho phép **Tester** truy vấn trực tiếp các bucket (ví dụ: `web-requests`, `cpu-usage`...) trong `InfluxDB-1`, `InfluxDB-2`, `InfluxDB-3` để kiểm tra **dữ liệu dạng time-series** đã được các `App-1/2/3` ghi vào có đầy đủ, đúng định dạng và chính xác hay không. |
+| **Tác nhân**   | Tester |
+| **Luồng chính** | - Tester mở **Data Explorer** của InfluxDB (ví dụ: http://influxdb1:8086). <br> - Đăng nhập (nếu hệ thống bật authentication). <br> - Chọn bucket cần xem (ví dụ: `web-requests`). <br> - Nhấn **Run/Submit** để thực thi truy vấn. <br> - Hệ thống trả kết quả dưới dạng bảng hoặc biểu đồ. <br> - Tester xem các thông tin: thời gian, giá trị (count, latency, error...), tags (app, method...). <br> - Nếu dữ liệu bất thường hoặc sai lệch, Tester ghi nhận để **báo lỗi hoặc điều chỉnh App**. |
+| **Luồng con** | - **Không có dữ liệu**: Nếu phạm vi thời gian query quá ngắn (ví dụ `last 1m`), kết quả trả về là bảng trống. <br> → Tester chỉnh lại thời gian (ví dụ `last 24h`) và chạy lại. |
+| **Tiền điều kiện** | - Các instance InfluxDB (1/2/3) **đang chạy ổn định** và đã cấu hình đầy đủ `bucket`, `retention policy`, và `authentication` (nếu có). <br> - Tester có **tài khoản** hoặc **API Token** để truy cập. <br> - Biết rõ URL kết nối từng InfluxDB:<ul><li>InfluxDB-1: http://influxdb1:8086/</li><li>InfluxDB-2: http://influxdb2:8086/</li><li>InfluxDB-3: http://influxdb3:8086/</li></ul> |
+| **Hậu điều kiện** | - Tester đã **kiểm tra được tính chính xác và định dạng của dữ liệu** ghi vào. <br> - Có cơ sở để xác định lỗi ở phía App ghi dữ liệu, hoặc phát hiện thiếu dữ liệu, phục vụ việc tối ưu hệ thống. |
+![influxdb](/static/images/influxdb.png)
+#### d. Xem Dashboard giao diện (View)
+
+| Thành phần       | Mô tả |
+|------------------|------|
+| **Mô tả**        | Cho phép **Tester** truy cập trang Dashboard (giao diện View) để xem các số liệu đã được **tổng hợp từ API Aggregator**, bao gồm: <br> - Tổng số request <br> - Độ trễ trung bình (average latency) <br> - Tỷ lệ lỗi (error rate) <br> Dữ liệu được hiển thị trực quan dưới dạng biểu đồ cho các App (`App-1`, `App-2`, `App-3`) hoặc dưới dạng tổng hợp. |
+| **Tác nhân**     | Tester |
+| **Luồng chính**  | - Tester mở trình duyệt và truy cập `http://<host>:3005`. <br> - Frontend gửi yêu cầu đến API Aggregator để lấy dữ liệu. <br> - Frontend nhận lại JSON chứa dữ liệu tổng hợp. <br> - Giao diện View hiển thị dữ liệu dưới dạng biểu đồ, bảng, hoặc các chỉ số tổng quan. |
+| **Luồng con**    | - Trường hợp **API trả về JSON rỗng** (không có dữ liệu): <br> → Frontend hiển thị thông báo "Không có dữ liệu", hoặc hiển thị dashboard rỗng. <br> → Tester có thể kiểm tra lại thời gian, App đang test, hoặc báo lỗi. |
+| **Tiền điều kiện** | - API Aggregator đang hoạt động ổn định và trả dữ liệu đúng định dạng. <br> - Frontend UI đã được build và host tại địa chỉ `http://<host>:3005`. <br> - Tester có trình duyệt và biết chính xác URL truy cập dashboard. |
+| **Hậu điều kiện** | - Tester đã xem được số liệu hiệu năng một cách **trực quan**. <br> - Có cơ sở để **điều chỉnh kịch bản kiểm thử**, báo cáo lỗi với Admin, hoặc đánh giá khả năng chịu tải của hệ thống. |
+![View](/static/images/view.png)
+
+# V. Phân Tích Vấn Đề và Rủi Ro Tiềm Ẩn
+
+## 1. Vấn Đề Hiện Tại
+
+- **Thiếu độ chịu lỗi (Fault Tolerance)**
+  - Mỗi instance App-1/2/3 và InfluxDB-1/2/3 chạy đơn lẻ, không có cơ chế health check và auto-restart.
+  - Nếu container gặp lỗi, toàn bộ dữ liệu hoặc luồng request sẽ bị gián đoạn, gây mất dữ liệu hoặc ngưng trệ.
+
+- **Không có phân mảnh (Sharding) và sao chép (Replication) dữ liệu**
+  - Mỗi InfluxDB chỉ gán cho một App riêng biệt, không có sharding để phân tán dữ liệu khi lưu trữ lớn.
+  - Không có cơ chế replica giữa các node, dẫn tới nguy cơ mất dữ liệu khi node bị lỗi.
+  - Hiệu năng có thể giảm nghiêm trọng khi InfluxDB phải chịu tải lớn.
+
+- **Điểm nghẽn trung tâm (Single Point of Failure)**
+  - NGINX Load Balancer và API Aggregator chỉ chạy dưới dạng một container đơn lẻ.
+  - Nếu một trong các container này lỗi, toàn bộ hệ thống mất khả năng xử lý request hoặc lấy dữ liệu.
+
+- **Khả năng mở rộng (Scalability) hạn chế**
+  - Hệ thống dùng Docker Compose để khởi động container tĩnh, không có dynamic scaling.
+  - Việc tăng thêm container hoặc tách node phải làm thủ công, kém linh hoạt khi tải tăng.
+
+## 2. Rủi Ro Tiềm Ẩn
+
+- **Mất dữ liệu khi InfluxDB gặp sự cố**
+  - Nếu InfluxDB-2 sập, dữ liệu metrics của App-2 sẽ bị mất.
+  - Không có replica để khôi phục, dẫn đến thiếu thông tin trong báo cáo.
+
+- **Downtime của NGINX hoặc API Aggregator**
+  - Nếu NGINX container lỗi, request không thể tới các App, hệ thống ngưng hoạt động.
+  - API Aggregator lỗi dẫn đến giao diện frontend không thể hiển thị dữ liệu.
+
+- **Performance Bottleneck tại API Aggregator**
+  - Tăng đột biến người dùng hoặc lượng dữ liệu lớn khiến Aggregator quá tải.
+  - Không có caching hay queue, có thể dẫn đến chậm hoặc crash.
+
+- **Thiếu khả năng mở rộng tự động**
+  - Không thể tự động scale khi tải tăng, dẫn đến hiện tượng latency spike hoặc timeout.
+
+- **Kém khả năng bảo mật và nhất quán**
+  - Chưa có RBAC mạnh mẽ, token API có thể bị hardcode.
+  - Nếu container InfluxDB bị tấn công, dữ liệu có thể bị thay đổi hoặc xóa trái phép.
+
+- **Khó khăn đồng bộ và đồng nhất dữ liệu khi mở rộng**
+  - Thiếu chiến lược sharding, replication phức tạp khi mở rộng số lượng instance InfluxDB.
+# VI. ĐỀ XUẤT GIẢI PHÁP VÀ HƯỚNG PHÁT TRIỂN
+
+Nhằm khắc phục các vấn đề nêu trên và áp dụng đúng các khái niệm phân tán đã học (fault tolerance, sharding, replication, giao tiếp phân tán…), đề xuất các giải pháp và hướng phát triển như sau:
+
+## 1. Giải Quyết Các Vấn Đề Hiện Tại
+
+### Tăng cường độ chịu lỗi (Fault Tolerance)
+
+- Sử dụng Docker Swarm / Kubernetes để triển khai NGINX và API Aggregator ở chế độ HA (High Availability). Cụ thể:
+  - Chạy ít nhất 2 replica cho NGINX (sau đó đặt phía trước là một load balancer cứng hoặc DNS Round-Robin).
+  - Triển khai 2–3 replica cho API Aggregator, dùng Ingress Controller (trên Kubernetes) hoặc nginx-proxy khác làm cân bằng tải nội bộ giữa các node Aggregator.
+- Health check định kỳ: cấu hình probe (liveness/readiness) cho container App-1/2/3 và InfluxDB. Nếu container hỏng, Kubernetes sẽ tự động khởi động lại.
+- Circuit Breaker (nếu API Aggregator gọi tới App khác hoặc các service bên ngoài): sử dụng thư viện như resilience4j (Java) hoặc opossum (Node.js) để ngăn chặn “thác lũ request” vào service đã gặp lỗi.
+
+### Replication và Backup cho InfluxDB
+
+- Triển khai InfluxDB Cluster (Enterprise) hoặc InfluxDB OSS với Chronograf + Kapacitor:
+  - Dùng tính năng replication factor ≥ 2 để mỗi đoạn dữ liệu (shard) được sao chép trên tối thiểu hai node.
+  - Nếu một node InfluxDB bị lỗi, node khác vẫn có thể phục vụ yêu cầu ghi/đọc.
+- Backup định kỳ: thiết lập task để xuất dữ liệu (thường xuyên, ví dụ mỗi 6 giờ) sang blob storage hoặc file backup lưu trữ ngoài. Khi cần khôi phục, có thể import lại toàn bộ hoặc một phần bucket.
+
+### Giải quyết điểm nghẽn (Single Point of Failure)
+
+- Thay vì chỉ dùng một container NGINX, deploy HAProxy hoặc NGINX Plus ở chế độ active-active.
+- Triển khai thêm API Gateway (ví dụ Kong hoặc Traefik) để cân bằng tải giữa nhiều instance API Aggregator, đồng thời xử lý chứng thực, rate-limiting.
+- Đảm bảo Frontend UI có fallback: khi một API Aggregator gặp lỗi, ứng dụng tự động chuyển sang API Aggregator khác.
+
+### Cải thiện giao tiếp phân tán (Distributed Communication)
+
+- Đưa message broker (Kafka, RabbitMQ) vào giữa App và InfluxDB. Khi App-1/2/3 ghi metrics, chúng đẩy message vào topic tương ứng. Từ đó, một consumer riêng (InfluxDB Writer Service) đọc và ghi batch vào InfluxDB, giảm tần suất ghi trực tiếp.
+- Tương tự, khi API Aggregator phải tổng hợp dữ liệu, có thể dùng cache layer (Redis) để lưu tạm kết quả query phổ biến trong khoảng thời gian ngắn (ví dụ 10s). Khi user gọi lại, Aggregator trả dữ liệu từ cache mà không query trực tiếp 3 DB, giảm độ trễ.
+
+## 2. Cải Thiện và Nâng Cấp
+
+### Phân mảnh (Sharding) cho InfluxDB
+
+- Nếu dữ liệu time-series quá lớn (hàng trăm triệu điểm trên mỗi giờ), cấu hình shard group sao cho mỗi Shard Duration hợp lý (ví dụ 1d hoặc 6h) để InfluxDB tự động tách và phân phối file dữ liệu.
+- Xây dựng sẵn retention policy khác nhau cho dữ liệu detail (1 tuần) và dữ liệu tổng hợp (1 tháng), giúp giảm dung lượng lưu trữ.
+- Khảo sát sử dụng Chronograf để tự động giám sát shard health, cân bằng disk I/O giữa các node.
+
+### Sao chép (Replication) cho App Service
+
+- Với App-1/2/3, triển khai ReplicaSet (Kubernetes) hoặc Swarm Service (Docker Swarm) để mỗi service có ít nhất 2–3 bản sao, đảm bảo khi một pod/container lỗi, các pod khác vẫn sẵn sàng nhận request.
+- Sử dụng Service Mesh (Istio/Linkerd) để quản lý lưu lượng nội bộ giữa các instance App, cung cấp tính năng retry, timeout, circuit breaker.
+
+### Cải thiện bảo mật (Security Hardening)
+
+- Mã hóa TLS giữa các thành phần: NGINX ↔ App, App ↔ InfluxDB, Frontend ↔ API Aggregator.
+- Triển khai Vault (HashiCorp) hoặc Kubernetes Secrets để lưu trữ an toàn các token/API Key thay vì hardcode.
+- Áp dụng RBAC (Role-Based Access Control) cho InfluxDB, giới hạn quyền ghi/đọc theo từng service.
+
+## 3. Hướng Phát Triển Tương Lai
+
+### Áp dụng kiến trúc Event-Driven & Micro-Frontends
+
+- Để tối ưu hóa giao tiếp giữa các service, xây dựng thành phần Event Bus (Kafka/RabbitMQ) để App-1/2/3 publish event khi có request mới hoặc metrics, Aggregator subscribe và xử lý bất đồng bộ.
+- Phân chia Frontend UI thành các Micro-Frontend chuyên trách hiển thị từng loại số liệu (ví dụ one micro-frontend cho biểu đồ request, one cho logs, one cho cảnh báo).
+
+### Triển khai Machine Learning cho dự đoán & cảnh báo sớm
+
+- Thu thập dữ liệu time-series dài hạn, đào tạo mô hình Machine Learning (ví dụ ARIMA, Prophet) để dự đoán về độ trễ, request load trong tương lai.
+- Tích hợp mô hình vào Kapacitor (InfluxData) hoặc MLflow để tạo cảnh báo sớm khi số liệu vượt ngưỡng bất thường.
+
+### Kết nối với hệ sinh thái IoT hoặc Big Data
+
+- Nếu hệ thống mở rộng để thu thập hàng triệu điểm metrics/giây (use case IoT), có thể tích hợp Apache Pulsar hoặc InfluxData Telegraf agents để thu thập và chuyển tiếp dữ liệu.
+- Đưa dữ liệu vào Hadoop HDFS / Apache Druid để thực hiện phân tích dạng Big Data, báo cáo logs và trend dài hạn.
+
+---
+
+# VII. ĐÁNH GIÁ THEO TIÊU CHÍ KỸ THUẬT VÀ ĐỀ XUẤT
+
+## 1. Tiêu chí khả năng mở rộng (Scalability)
+
+- **Hiện tại:** Dự án chỉ sử dụng Docker Compose, scale tĩnh. Khó xử lý tải tăng đột biến.
+- **Đề xuất:** Triển khai Autoscaling (Horizontal Pod Autoscaler trên Kubernetes) đảm bảo tự động tăng/giảm số instance App và API Aggregator dựa trên CPU/Memory hoặc custom metrics (ví dụ: request rate).
+
+## 2. Tiêu chí chịu lỗi (Fault Tolerance & High Availability)
+
+- **Hiện tại:** Mỗi thành phần chạy đơn lẻ, không có replica hoặc cluster.
+- **Đề xuất:**
+  - NGINX & API Aggregator: chạy ít nhất 2–3 replica, cấu hình Ingress/Load Balancer HA.
+  - InfluxDB: thiết lập cluster replication (Replication Factor ≥ 2), hoặc dùng dịch vụ Managed InfluxDB có sẵn HA.
+  - App-1/2/3: dùng ReplicaSet (K8s) hoặc Service Scale (Swarm), health check và readiness probe.
+
+## 3. Tiêu chí phân mảnh và sao chép dữ liệu (Sharding & Replication)
+
+- **Hiện tại:** Dữ liệu time-series chỉ được ghi độc lập vào từng instance InfluxDB, không có khoá vùng dữ liệu.
+- **Đề xuất:**
+  - Sử dụng InfluxDB Enterprise hoặc TiDB/ClickHouse để tự động sharding và replication.
+  - Nếu giữ InfluxDB OSS, cấu hình shard duration và retention policy hợp lý, đồng thời backup định kỳ.
+
+## 4. Tiêu chí giao tiếp phân tán (Distributed Communication)
+
+- **Hiện tại:** App-1/2/3 ghi metrics trực tiếp, API Aggregator gọi trực tiếp. Thiếu layer trung gian, dễ bị nghẽn khi tải cao.
+- **Đề xuất:**
+  - Dùng Message Broker (Kafka/RabbitMQ) để App publish message và InfluxDB Writer subscribe, đảm bảo decoupling, giảm áp lực ghi trực tiếp.
+  - Caching tại API Aggregator (Redis hoặc in-memory cache) để giảm truy vấn dư thừa vào InfluxDB.
+
+## 5. Tiêu chí bảo mật (Security)
+
+- **Hiện tại:** Token/API Key có thể hardcode, TLS chưa được mã hóa đầy đủ.
+- **Đề xuất:**
+  - Mã hóa toàn bộ giao tiếp (TLS) giữa các service.
+  - Sử dụng Vault hoặc Kubernetes Secrets để lưu trữ thông tin nhạy cảm.
+  - Áp dụng RBAC cho InfluxDB, phân quyền cụ thể (chỉ App có quyền ghi, chỉ Tester/Admin có quyền đọc raw data).
+
+## 6. Tiêu chí bảo trì và Vận hành (Maintainability & Operability)
+
+- **Hiện tại:** Chưa có CI/CD, việc build và deploy vẫn thủ công.
+- **Đề xuất:**
+  - Xây dựng pipeline CI/CD (GitHub Actions/GitLab CI) để tự động build–test–deploy khi có thay đổi mã nguồn.
+  - Triển khai Prometheus + Grafana + Alertmanager để giám sát hệ thống, cảnh báo kịp thời.
+  - Dùng Helm Chart để quản lý Kubernetes manifest, dễ versioning và rollback.
+
+---
+
+# KẾT LUẬN
+
+Đồ án “THEO DÕI LƯỢNG REQUEST CỦA TRANG WEB” đã hoàn thành mô hình giám sát đơn giản: NGINX phân phối yêu cầu, ba dịch vụ (App-1, App-2, App-3) ghi số liệu vào ba cơ sở dữ liệu InfluxDB, API Aggregator gom mọi dữ liệu và giao diện web hiển thị các biểu đồ về số lượng yêu cầu, độ trễ và tỉ lệ lỗi.
+
+Nhóm đã khởi động đồng loạt các thành phần bằng Docker Compose và áp dụng các khái niệm cơ bản về cân bằng tải, thu thập số liệu và hiển thị dashboard.
+
+Trong tương lai, có thể tiếp tục đơn giản hóa giao diện, phân bổ tài nguyên tự động và bổ sung cảnh báo thông minh dựa trên dữ liệu thu thập được.

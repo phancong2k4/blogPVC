@@ -64,7 +64,7 @@ Hệ thống web hiện đại thường được triển khai theo mô hình ph
 ## 1. Mô Hình Kiến Trúc
 
 Hệ thống được triển khai dưới dạng microservices với các thành phần chính sau, đóng gói trong Docker Container và điều phối bởi Docker Compose:
-![mohinhkientruc](/images/sodokientruc.drawio%20(1).png)
+![mohinhkientruc](/images/sodokientruc.png)
 # I. Tổng Quan Dự Án
 
 Hệ thống web hiện đại thường được triển khai theo mô hình phân tán, nhằm mục tiêu mở rộng (scalability), tăng khả năng chịu lỗi (fault tolerance) và đáp ứng lượng người dùng lớn. Một vấn đề đặt ra trong các hệ thống như vậy là giám sát lưu lượng truy cập theo thời gian thực, đặc biệt là trong môi trường có cân bằng tải (load balancing), nơi mỗi máy chủ backend chỉ biết đến một phần lưu lượng.
@@ -667,10 +667,12 @@ document.getElementById("refreshButton").addEventListener("click", () => {
 Phần này trình bày các sơ đồ trực quan hóa cấu trúc và luồng hoạt động của hệ thống.
 
 ## 1. Sơ đồ Kiến trúc Hệ thống
-![mohinhkientruc](/images/sodokientruc.drawio%20(1).png)
+![mohinhkientruc](/images/sodokientruc.png)
 ## 2. Sơ đồ Triển khai
-![sodotrienkhai](/images/sodotrienkhai1.txt.drawio.png)
-## 3. Các yêu cầu chức năng
+![sodotrienkhai](/images/sodotrienkhai1.png)
+## 3. Sơ đồ Trình tự
+![sodotrinhtu](/static/images/Sodotrinhtu.png)
+## 4. Các yêu cầu chức năng
 
 | Nhóm chức năng        | Chức năng                                                | Tác nhân  |
 |----------------------|---------------------------------------------------------|-----------|
@@ -679,4 +681,16 @@ Phần này trình bày các sơ đồ trực quan hóa cấu trúc và luồng 
 | Xem dữ liệu thô InfluxDB | Truy vấn trực tiếp vào InfluxDB (qua giao diện Data Explorer) để xem dữ liệu chưa tổng hợp |           |
 | Xem Dashboard giao diện (view) | Mở Frontend UI để kiểm tra biểu đồ, số liệu cơ bản       |           |
 
-### 3.1. Sơ đồ Use-case:
+### 4.1. Sơ đồ Use-case:
+![sodousecase](/images/sodousecase.drawio%20(1).png)
+### 4.2. Đặc tả các Use-case
+#### a. Tạo yêu cầu kiểm thử
+
+| Thành phần     | Mô tả |
+|----------------|------|
+| **Mô tả**      | Chức năng cho phép **Tester** cấu hình và khởi tạo một loạt HTTP request đến **NGINX Load Balancer**, nhằm kiểm tra hiệu năng, độ ổn định và khả năng chịu tải của hệ thống. |
+| **Tác nhân**   | Tester |
+| **Luồng chính** | - Tester truy cập giao diện **“Request”**. <br> - Hệ thống hiển thị form với các trường nhập: <ul><li>URL đích (mặc định: `http://nginx:80/`)</li><li>Số lượng request</li></ul> - Tester nhấn nút **“Submit”** để bắt đầu kiểm thử. |
+| **Luồng con** | - Nếu Tester **để trống hoặc nhập sai giá trị** “Số lượng request” (ví dụ: không phải số dương), hệ thống hiển thị **Validation Error** và không cho phép submit. <br> - Nếu Tester nhập **URL sai định dạng** (không phải `http://...`), hệ thống hiển thị lỗi “URL không hợp lệ”. |
+| **Tiền điều kiện** | Giao diện Request đã được build, frontend có thể kết nối backend để gửi request. |
+| **Hậu điều kiện** | Hệ thống đã gửi các HTTP request và ghi nhận kết quả: <ul><li>Thành công / Thất bại</li><li>Thời gian phản hồi</li></ul> Những dữ liệu này được dùng cho đánh giá hiệu năng. |
